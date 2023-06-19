@@ -1,0 +1,23 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Query\Expression;
+use Illuminate\Support\Facades\Schema;
+
+class AddLetsEncryptCertificatesSubjectAlternativeNames extends Migration
+{
+    public function up()
+    {
+        Schema::table('lets_encrypt_certificates', function (Blueprint $table) {
+            $table->json('subject_alternative_names')->default(new Expression('(JSON_ARRAY())'))->after('domain');
+        });
+    }
+
+    public function down()
+    {
+        Schema::table('lets_encrypt_certificates', function (Blueprint $table) {
+            $table->dropColumn('subject_alternative_names');
+        });
+    }
+}
