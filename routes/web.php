@@ -33,3 +33,13 @@ Route::middleware([
         return Inertia::render('Dashboard');
     })->name('dashboard');
 });
+
+Route::get('/t', function () {
+    $le = new \App\Ssl\LetsEncrypt(
+        username: 'narayanadhikary24@gmail.com'
+    );
+    $order = $le->createOrder(['wovo.xyz']);
+    $authorizations = $le->authorize($order);
+
+    dd($le->isOwnershipVerificationNeeded($authorizations[0]));
+});
