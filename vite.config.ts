@@ -22,5 +22,5 @@ export default defineConfig({
             pattern: "lang/**/*.php",
             command: "php artisan publish:lang-js",
         }),
-    ],
+    ]
 });

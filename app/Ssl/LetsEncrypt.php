@@ -60,6 +60,11 @@ class LetsEncrypt
         );
     }
 
+    public function getOrderId(Order $order): string
+    {
+        return $order->getId();
+    }
+
     /**
      * @throws \Exception
      */
@@ -208,6 +213,55 @@ class LetsEncrypt
             $userDirectory,
             $path
         ]);
+    }
+
+    public function authorizationChallenges(Authorization $authorization): array
+    {
+        $data = [];
+        foreach ($authorization->getChallenges() as $challenge) {
+            $data[] = [
+                "authorizationURL" => $challenge->getAuthorizationURL(),
+                "url" => $challenge->getUrl(),
+                "status" => $challenge->getStatus(),
+                "type" => $challenge->getType(),
+                "token" => $challenge->getToken(),
+            ];
+        }
+        return $data;
+    }
+
+    /**
+     * @param Order $order
+     * @param array<Authorization> $authorizations
+     * @return array
+     */
+    public function transformOrder(Order $order, array $authorizations): array
+    {
+        $output = [
+            "id" => $order->getId(),
+            "domains" => $order->getDomains(),
+            "authorizations" => []
+        ];
+
+        foreach ($authorizations as $authorization) {
+            $file = $authorization->getFile();
+            $output["authorizations"][] = [
+                "id" => $this->getAuthorizationId($authorization),
+                "domain" => $authorization->getDomain(),
+                "txt_record" => [
+                    "name" => $authorization->getTxtRecord()->getName(),
+                    "value" => $authorization->getTxtRecord()->getValue()
+                ],
+                "expires_at" => $authorization->getExpires(),
+                "authorization_url" => $authorization?->getChallenges()[0]?->getAuthorizationURL(),
+                "file" => [
+                    "name" => $file->getFilename(),
+                    "contents" => $file->getContents()
+                ],
+                "challenges" => $this->authorizationChallenges($authorization)
+            ];
+        }
+        return $output;
     }
 
     protected function getHttpClient(?string $sourceIp = null): HttpClient

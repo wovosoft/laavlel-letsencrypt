@@ -2,7 +2,14 @@
 {
     "compilerOptions": {
         "resolveJsonModule": true,
+        "module": "esnext",
+        "target": "esnext",
+        "sourceMap": true,
+        "baseUrl": ".",
+        "moduleResolution": "node",
         "allowSyntheticDefaultImports": true,
+        "esModuleInterop": true,
+        "jsx": "preserve",
         "types": [
             "vite/client"
         ],
@@ -13,28 +20,17 @@
             "resources/js/types",
             "resources/js/models"
         ],
-        "allowJs": true,
-        "module": "ESNext",
-        "sourceMap": true,
-        "moduleResolution": "node",
-        "baseUrl": ".",
-        "jsx": "preserve",
-        "strict": true,
-        "isolatedModules": true,
-        "target": "ESNext",
-        "esModuleInterop": true,
-        "forceConsistentCasingInFileNames": true,
-        "noEmit": true,
-        "skipLibCheck": true,
         "paths": {
             "@/*": [
-                "./resources/js/*"
+                "resources/js/*"
             ]
         }
     },
     "include": [
-        "resources/js/**/*.ts",
-        "resources/js/**/*.d.ts",
-        "resources/js/**/*.vue"
+        "resources/js/**/*"
+    ],
+    "exclude": [
+        "node_modules",
+        "public"
     ]
 }

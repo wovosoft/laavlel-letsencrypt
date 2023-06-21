@@ -1,43 +1,44 @@
-// import './bootstrap';
-// import '../css/app.css';
-import "bootstrap/scss/bootstrap.scss";
+import 'bootstrap/dist/css/bootstrap.css';
 import "@wovosoft/wovoui/dist/style.css";
+// import "./../css/custom.css";
 
-import {createApp, h, DefineComponent} from 'vue';
-import {createInertiaApp} from '@inertiajs/vue3';
+import {createApp, DefineComponent, h} from 'vue';
+import {createInertiaApp, router} from '@inertiajs/vue3';
 import {resolvePageComponent} from 'laravel-vite-plugin/inertia-helpers';
 import {ZiggyVue} from '../../vendor/tightenco/ziggy/dist/vue.m';
-// @ts-ignore
-import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 
-const appName = window.document.getElementsByTagName('title')[0]?.innerText || 'Laravel';
-import i18n from "@/Lang/index";
+const appName = window.document.getElementsByTagName('title')[0]?.innerText || 'BKB GoAML';
+// @ts-ignore
+import AppLayout from "@/Layouts/AuthenticatedLayout.vue";
+import i18n from "@/Lang";
+import {isLoading} from "@/Composables/useLoading";
+
+router.on('start', () => isLoading.value = true);
+router.on('finish', () => isLoading.value = false);
 
 createInertiaApp({
-    title: (title) => `${title} - ${appName}`,
-    resolve: (name) => {
+    title: (title: string): string => `${title} - ${appName}`,
+    resolve: (name: string) => {
         const page = resolvePageComponent(
-            `./Pages/${name}.vue`, import.meta.glob<DefineComponent>('./Pages/**/*.vue')
+            `./Pages/${name}.vue`,
+            import.meta.glob<DefineComponent>("./Pages/**/*.vue")
         );
-        // console.log(name)
         if (['Login'].includes(name) || name.startsWith('Auth')) {
             return page;
         }
-
         page.then((module: DefineComponent) => {
-            module.default.layout = module.default.layout || AuthenticatedLayout;
+            module.default.layout = module.default.layout || AppLayout;
         });
         return page;
-
     },
+
+    // @ts-ignore
     setup({el, App, props, plugin}) {
-        createApp({render: () => h(App, props)})
-            .use(plugin)
+        return createApp({render: () => h(App, props)})
             .use(i18n)
-            .use(ZiggyVue, Ziggy)
+            .use(plugin)
+            .use(ZiggyVue, window['Ziggy'])
             .mount(el);
     },
-    progress: {
-        color: '#4B5563',
-    },
+    progress: {color: '#4B5563'}
 });
