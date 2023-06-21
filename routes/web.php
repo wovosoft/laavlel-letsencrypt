@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CertificateController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -17,10 +18,10 @@ use Inertia\Inertia;
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
-        'canLogin' => Route::has('login'),
-        'canRegister' => Route::has('register'),
+        'canLogin'       => Route::has('login'),
+        'canRegister'    => Route::has('register'),
         'laravelVersion' => Application::VERSION,
-        'phpVersion' => PHP_VERSION,
+        'phpVersion'     => PHP_VERSION,
     ]);
 });
 
@@ -34,12 +35,14 @@ Route::middleware([
     })->name('dashboard');
 });
 
+CertificateController::routes();
+
 Route::get('/t', function () {
     $le = new \App\Ssl\LetsEncrypt(
-        username: 'narayanadhikary24@gmail.com'
+        username: 'narayanadhikary24@gmail.com',
+        mode: \App\Ssl\ClientModes::Live
     );
-    $order = $le->createOrder(['wovo.xyz']);
-    $authorizations = $le->authorize($order);
-
-    dd($le->isOwnershipVerificationNeeded($authorizations[0]));
+    dd($le);
 });
+
+
