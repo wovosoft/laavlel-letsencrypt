@@ -10,7 +10,7 @@ import {Card, Container} from "@wovosoft/wovoui";
 
     <Container>
         <Card class="mt-3 text-center">
-            <Link class="btn btn-primary" :href="route('certificates.create-order')">
+            <Link class="btn btn-primary" :href="route('guest-certificates.create-order')">
                 Generate Free SSL
             </Link>
         </Card>

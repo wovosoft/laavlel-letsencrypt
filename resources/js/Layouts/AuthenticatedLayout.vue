@@ -6,6 +6,7 @@ import {
 import {Link} from "@inertiajs/vue3";
 import route from "ziggy-js";
 import {removeToast, toasts} from "@/Composables/useToasts";
+import NavItemLink from "@/Components/NavItemLink.vue";
 </script>
 
 <template>
@@ -18,17 +19,12 @@ import {removeToast, toasts} from "@/Composables/useToasts";
         <template #default="{collapsed}">
             <Collapse is-nav :visible="collapsed">
                 <Nav class="me-auto" navs>
-                    <NavItemDropdown text="Setup">
-                        <!--                        <DropdownLink :href="route('accounts.index')">-->
-                        <!--                            Accounts-->
-                        <!--                        </DropdownLink>-->
-                        <!--                        <DropdownLink :href="route('people.index')">-->
-                        <!--                            People-->
-                        <!--                        </DropdownLink>-->
-                        <!--                        <DropdownLink :href="route('transactions.index')">-->
-                        <!--                            Transactions-->
-                        <!--                        </DropdownLink>-->
-                    </NavItemDropdown>
+                    <NavItemLink :href="route('accounts.index')">
+                        Accounts
+                    </NavItemLink>
+                    <NavItemLink :href="route('domains.index')">
+                        Domains
+                    </NavItemLink>
                 </Nav>
                 <Nav navs>
                     <NavItemDropdown :text="$page.props.auth?.user?.name">

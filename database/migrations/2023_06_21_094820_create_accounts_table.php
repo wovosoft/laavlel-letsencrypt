@@ -19,7 +19,7 @@ return new class extends Migration {
                 ->cascadeOnUpdate()
                 ->cascadeOnDelete();
 
-            $table->string('email');
+            $table->string('email')->unique();
             $table->text('key')->nullable();
             $table->timestamps();
         });

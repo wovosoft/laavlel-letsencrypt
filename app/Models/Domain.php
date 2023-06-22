@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  *
  * @property int $id
  * @property int $account_id
- * @property string $title
+ * @property string $domain
  * @property int $is_ownership_verified
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
@@ -24,15 +24,19 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @method static \Illuminate\Database\Eloquent\Builder|Domain query()
  * @method static \Illuminate\Database\Eloquent\Builder|Domain whereAccountId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Domain whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Domain whereDomain($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Domain whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Domain whereIsOwnershipVerified($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Domain whereTitle($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Domain whereUpdatedAt($value)
  * @mixin \Eloquent
  */
 class Domain extends Model
 {
     use HasFactory;
+
+    protected $casts = [
+        "is_ownership_verified" => "boolean"
+    ];
 
     public function account(): BelongsTo
     {

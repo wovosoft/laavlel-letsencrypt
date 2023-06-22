@@ -1,26 +1,29 @@
 <script setup lang="ts">
-import {PropType, ref} from "vue";
-import {Container, DataTable, FormGroup, Input, Modal, Textarea,} from "@wovosoft/wovoui";
+import {computed, PropType, ref} from "vue";
+import {Container, DataTable, FormGroup, Input, Modal} from "@wovosoft/wovoui";
 import {DatatableType} from "@/types";
 import ActionButtons from "@/Components/ActionButtons.vue";
 import BasicDatatable from "@/Components/Datatable/BasicDatatable.vue";
-import {router, useForm} from "@inertiajs/vue3";
+import {useForm} from "@inertiajs/vue3";
 import route from "ziggy-js";
 import {addToast} from "@/Composables/useToasts";
+import {toDateTime} from "@/Composables/useHelpers";
 
 const props = defineProps({
-    items: Object as PropType<DatatableType<Person>>,
+    items: Object as PropType<DatatableType<Account>>,
     queries: Object as PropType<{ [key: string]: any }>
 });
 
-const fields = [
+
+const fields = computed(() => [
     {key: 'id'},
-    {key: 'full_name', label: 'Name'},
-    {key: 'phone'},
-    {key: 'email'},
-    {key: 'address'},
+    {key: 'user', formatter: (v, k) => v[k]?.name},
+    {key: 'account_no'},
+    {key: 'account_name'},
+    {key: 'created_at', formatter: (v, k) => toDateTime(v[k])},
+    {key: 'status'},
     {key: 'action', tdClass: 'text-end', thClass: 'text-end'},
-];
+]);
 
 const isView = ref<boolean>(false);
 const isEdit = ref<boolean>(false);
@@ -29,19 +32,15 @@ const currentItem = ref<{ [key: string]: any } | null>(null);
 const showItem = (item) => {
     currentItem.value = item;
     isView.value = true;
-}
+};
 
-const formKeys = ['id', 'first_name', 'last_name', 'phone', 'email', 'address', 'dob'];
 const formItem = useForm({
     id: null,
-    first_name: null,
-    last_name: null,
-    phone: null,
-    email: null,
-    address: null,
-    dob: null,
+    account_no: null,
+    account_name: null,
 });
 
+const formKeys = ['id', 'account_no', 'account_name'];
 const editItem = (item) => {
     if (item) {
         formKeys.forEach(key => {
@@ -51,27 +50,11 @@ const editItem = (item) => {
     isEdit.value = true;
 };
 
-const deleteItem = (item) => {
-    if (confirm("Are You Sure?")) {
-        const options = {
-            onSuccess: page => {
-                addToast(page.props.notification);
-            },
-            onError: error => {
-                console.log(error)
-            }
-        };
-
-        router.delete(route('people.delete', {person: item.id}), options);
-    }
-}
-
-const theForm = ref<HTMLFormElement>()
+const theForm = ref<HTMLFormElement>();
 const handleSubmission = () => {
     if (theForm.value?.reportValidity()) {
         const options = {
             onSuccess: page => {
-                console.log(page.props)
                 addToast(page.props.notification);
                 formItem.reset();
                 isEdit.value = false;
@@ -82,16 +65,12 @@ const handleSubmission = () => {
         };
 
         if (formItem.id) {
-            formItem.patch(route('people.update', {person: formItem.id}), options);
+            formItem.patch(route('accounts.update', {account: formItem.id}), options);
         } else {
-            formItem.put(route('people.store'), options);
+            formItem.put(route('accounts.store'), options);
         }
     }
-}
-
-function onHiddenForm() {
-    formItem.reset();
-}
+};
 </script>
 
 <template>
@@ -110,7 +89,7 @@ function onHiddenForm() {
                     <ActionButtons
                         @click:view="showItem(row.item)"
                         @click:edit="editItem(row.item)"
-                        @click:delete="deleteItem(row.item)"
+                        no-delete
                     />
                 </template>
             </DataTable>
@@ -128,7 +107,7 @@ function onHiddenForm() {
         <Modal v-model="isEdit"
                shrink
                lazy
-               @hidden="onHiddenForm"
+               @hidden="formItem.reset()"
                header-variant="dark"
                close-btn-white
                size="lg"
@@ -138,25 +117,14 @@ function onHiddenForm() {
                :loading="formItem.processing"
                @ok.prevent="handleSubmission"
                title="Person Details">
-            <form class="row" ref="theForm">
-                <FormGroup label="First Name *" class="col-md-6">
-                    <Input size="sm" v-model="formItem.first_name" required placeholder="First Name"/>
+            <form ref="theForm" @submit.prevent="handleSubmission">
+                <FormGroup label="Account No. *">
+                    <Input size="sm" required v-model="formItem.account_no" placeholder="Account No."/>
                 </FormGroup>
-                <FormGroup label="Last Name" class="col-md-6">
-                    <Input size="sm" v-model="formItem.last_name" placeholder="Last Name"/>
+                <FormGroup label="Account Name *">
+                    <Input size="sm" required v-model="formItem.account_name" placeholder="Account Name"/>
                 </FormGroup>
-                <FormGroup label="Phone" class="col-md-6">
-                    <Input size="sm" v-model="formItem.phone" type="tel" placeholder="Phone"/>
-                </FormGroup>
-                <FormGroup label="Email Address" class="col-md-6">
-                    <Input size="sm" v-model="formItem.email" type="email" placeholder="Email Address"/>
-                </FormGroup>
-                <FormGroup label="Date of Birth" class="col-md-6">
-                    <Input size="sm" v-model="formItem.dob" type="date" placeholder="Date of Birth"/>
-                </FormGroup>
-                <FormGroup label="Address" class="col-md-6">
-                    <Textarea size="sm" v-model="formItem.address" placeholder="Address"/>
-                </FormGroup>
+                <!--                <pre>{{ formItem }}</pre>-->
             </form>
         </Modal>
     </Container>

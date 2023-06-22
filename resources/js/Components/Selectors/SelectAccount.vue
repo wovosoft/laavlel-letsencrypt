@@ -1,16 +1,16 @@
 <template>
     <InputGroup size="sm" :class="{'is-invalid':state?null:false}">
         <TypeHead
-            preload
+            :preload="preload"
             v-bind="$attrs"
             class="form-control p-0"
             toggle-class="border-0"
             v-model="model"
             toggle-size="sm"
-            :get-option="(op:Account) => op?.account_no"
+            :get-option="(op:Account) => op?.email"
             :api-url="route('accounts.options')">
             <template #label>
-                {{ model?.account_no || 'Select Account' }}
+                {{ model?.email || 'Select Account' }}
             </template>
         </TypeHead>
         <Button @click="model=null">
@@ -39,6 +39,10 @@ const props = defineProps({
         type: Number as PropType<number | null>,
         default: null
     },
+    preload: {
+        type: Boolean as PropType<boolean>,
+        default: false
+    }
 });
 
 const model = useSelectorModel(

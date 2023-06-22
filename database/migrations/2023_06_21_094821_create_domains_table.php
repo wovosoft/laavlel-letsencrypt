@@ -18,7 +18,7 @@ return new class extends Migration {
                 ->cascadeOnDelete()
                 ->cascadeOnUpdate();
 
-            $table->string('title');
+            $table->string('domain')->unique();
             $table->boolean('is_ownership_verified');
             $table->timestamps();
         });
