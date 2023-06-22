@@ -1,0 +1,31 @@
+{
+    "name": "wovosoft/laravel-letsencrypt-core",
+    "description": "Yet Another ACME client: a decoupled LetsEncrypt client",
+    "type": "package",
+    "keywords": [
+        "afosto",
+        "lets",
+        "acme",
+        "acmev2",
+        "v2",
+        "encrypt"
+    ],
+    "homepage": "https://afosto.com",
+    "license": "Apache-2.0",
+    "authors": [
+        {
+            "name": "Afosto Team",
+            "homepage": "https://afosto.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Wovosoft\\LaravelLetsencryptCore\\": "./src"
+        }
+    },
+    "require": {
+        "league/flysystem": "^1.0|^3.0",
+        "ext-openssl": "*",
+        "ext-json": "*"
+    }
+}

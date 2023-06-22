@@ -4,60 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "bc9d2b6b831142db6d423c4394d871c8",
+    "content-hash": "8aba94fdf18d7b2be46eb285b44ef4ec",
     "packages": [
-        {
-            "name": "afosto/yaac",
-            "version": "v1.5.2",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/afosto/yaac.git",
-                "reference": "3c09d1a8ae7df6ba0ec23c9ccf641b3295219de7"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/afosto/yaac/zipball/3c09d1a8ae7df6ba0ec23c9ccf641b3295219de7",
-                "reference": "3c09d1a8ae7df6ba0ec23c9ccf641b3295219de7",
-                "shasum": ""
-            },
-            "require": {
-                "ext-json": "*",
-                "ext-openssl": "*",
-                "guzzlehttp/guzzle": "^6.3|^7.0",
-                "league/flysystem": "^1.0|^3.0"
-            },
-            "type": "package",
-            "autoload": {
-                "psr-4": {
-                    "Afosto\\Acme\\": "./src"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "Apache-2.0"
-            ],
-            "authors": [
-                {
-                    "name": "Afosto Team",
-                    "homepage": "https://afosto.com"
-                }
-            ],
-            "description": "Yet Another ACME client: a decoupled LetsEncrypt client",
-            "homepage": "https://afosto.com",
-            "keywords": [
-                "ACME",
-                "acmev2",
-                "afosto",
-                "encrypt",
-                "lets",
-                "v2"
-            ],
-            "support": {
-                "issues": "https://github.com/afosto/yaac/issues",
-                "source": "https://github.com/afosto/yaac/tree/v1.5.2"
-            },
-            "time": "2023-05-02T15:11:17+00:00"
-        },
         {
             "name": "bacon/bacon-qr-code",
             "version": "2.0.8",
@@ -1339,16 +1287,16 @@
         },
         {
             "name": "laravel/fortify",
-            "version": "v1.17.3",
+            "version": "v1.17.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laravel/fortify.git",
-                "reference": "e99f7cb135bb6e05e4c49e9224c9c9a33c27cfa0"
+                "reference": "110dd0d09b70461d651218240120e24ba8d8cbe1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laravel/fortify/zipball/e99f7cb135bb6e05e4c49e9224c9c9a33c27cfa0",
-                "reference": "e99f7cb135bb6e05e4c49e9224c9c9a33c27cfa0",
+                "url": "https://api.github.com/repos/laravel/fortify/zipball/110dd0d09b70461d651218240120e24ba8d8cbe1",
+                "reference": "110dd0d09b70461d651218240120e24ba8d8cbe1",
                 "shasum": ""
             },
             "require": {
@@ -1399,7 +1347,7 @@
                 "issues": "https://github.com/laravel/fortify/issues",
                 "source": "https://github.com/laravel/fortify"
             },
-            "time": "2023-06-02T12:58:20+00:00"
+            "time": "2023-06-18T09:17:00+00:00"
         },
         {
             "name": "laravel/framework",
@@ -1603,16 +1551,16 @@
         },
         {
             "name": "laravel/jetstream",
-            "version": "v3.2.2",
+            "version": "v3.2.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laravel/jetstream.git",
-                "reference": "6ca907084102b567645b59a7114889b0a0a992cf"
+                "reference": "c65656cc4743b3b87837777e24f6caffdc9ce3f3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laravel/jetstream/zipball/6ca907084102b567645b59a7114889b0a0a992cf",
-                "reference": "6ca907084102b567645b59a7114889b0a0a992cf",
+                "url": "https://api.github.com/repos/laravel/jetstream/zipball/c65656cc4743b3b87837777e24f6caffdc9ce3f3",
+                "reference": "c65656cc4743b3b87837777e24f6caffdc9ce3f3",
                 "shasum": ""
             },
             "require": {
@@ -1668,7 +1616,7 @@
                 "issues": "https://github.com/laravel/jetstream/issues",
                 "source": "https://github.com/laravel/jetstream"
             },
-            "time": "2023-05-30T14:24:35+00:00"
+            "time": "2023-06-07T13:20:25+00:00"
         },
         {
             "name": "laravel/sanctum",
@@ -2314,16 +2262,16 @@
         },
         {
             "name": "monolog/monolog",
-            "version": "3.3.1",
+            "version": "3.4.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Seldaek/monolog.git",
-                "reference": "9b5daeaffce5b926cac47923798bba91059e60e2"
+                "reference": "e2392369686d420ca32df3803de28b5d6f76867d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Seldaek/monolog/zipball/9b5daeaffce5b926cac47923798bba91059e60e2",
-                "reference": "9b5daeaffce5b926cac47923798bba91059e60e2",
+                "url": "https://api.github.com/repos/Seldaek/monolog/zipball/e2392369686d420ca32df3803de28b5d6f76867d",
+                "reference": "e2392369686d420ca32df3803de28b5d6f76867d",
                 "shasum": ""
             },
             "require": {
@@ -2338,7 +2286,7 @@
                 "doctrine/couchdb": "~1.0@dev",
                 "elasticsearch/elasticsearch": "^7 || ^8",
                 "ext-json": "*",
-                "graylog2/gelf-php": "^1.4.2 || ^2@dev",
+                "graylog2/gelf-php": "^1.4.2 || ^2.0",
                 "guzzlehttp/guzzle": "^7.4.5",
                 "guzzlehttp/psr7": "^2.2",
                 "mongodb/mongodb": "^1.8",
@@ -2346,7 +2294,7 @@
                 "phpstan/phpstan": "^1.9",
                 "phpstan/phpstan-deprecation-rules": "^1.0",
                 "phpstan/phpstan-strict-rules": "^1.4",
-                "phpunit/phpunit": "^9.5.26",
+                "phpunit/phpunit": "^10.1",
                 "predis/predis": "^1.1 || ^2",
                 "ruflin/elastica": "^7",
                 "symfony/mailer": "^5.4 || ^6",
@@ -2399,7 +2347,7 @@
             ],
             "support": {
                 "issues": "https://github.com/Seldaek/monolog/issues",
-                "source": "https://github.com/Seldaek/monolog/tree/3.3.1"
+                "source": "https://github.com/Seldaek/monolog/tree/3.4.0"
             },
             "funding": [
                 {
@@ -2411,7 +2359,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2023-02-06T13:46:10+00:00"
+            "time": "2023-06-21T08:46:11+00:00"
         },
         {
             "name": "nesbot/carbon",
@@ -6243,6 +6191,48 @@
                 "source": "https://github.com/webmozarts/assert/tree/1.11.0"
             },
             "time": "2022-06-03T18:03:27+00:00"
+        },
+        {
+            "name": "wovosoft/laravel-letsencrypt-core",
+            "version": "dev-master",
+            "dist": {
+                "type": "path",
+                "url": "./packages/wovosoft/laravel-letsencrypt-core",
+                "reference": "1cf954b75f7a56d94581506a29271fa415a11e98"
+            },
+            "require": {
+                "ext-json": "*",
+                "ext-openssl": "*",
+                "league/flysystem": "^1.0|^3.0"
+            },
+            "type": "package",
+            "autoload": {
+                "psr-4": {
+                    "Wovosoft\\LaravelLetsencryptCore\\": "./src"
+                }
+            },
+            "license": [
+                "Apache-2.0"
+            ],
+            "authors": [
+                {
+                    "name": "Afosto Team",
+                    "homepage": "https://afosto.com"
+                }
+            ],
+            "description": "Yet Another ACME client: a decoupled LetsEncrypt client",
+            "homepage": "https://afosto.com",
+            "keywords": [
+                "acme",
+                "acmev2",
+                "afosto",
+                "encrypt",
+                "lets",
+                "v2"
+            ],
+            "transport-options": {
+                "relative": true
+            }
         }
     ],
     "packages-dev": [
@@ -7071,16 +7061,16 @@
         },
         {
             "name": "laravel/pint",
-            "version": "v1.10.2",
+            "version": "v1.10.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laravel/pint.git",
-                "reference": "f78de1a1bbab7aa41a6ea211c5962b0530d1a301"
+                "reference": "c472786bca01e4812a9bb7933b23edfc5b6877b7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laravel/pint/zipball/f78de1a1bbab7aa41a6ea211c5962b0530d1a301",
-                "reference": "f78de1a1bbab7aa41a6ea211c5962b0530d1a301",
+                "url": "https://api.github.com/repos/laravel/pint/zipball/c472786bca01e4812a9bb7933b23edfc5b6877b7",
+                "reference": "c472786bca01e4812a9bb7933b23edfc5b6877b7",
                 "shasum": ""
             },
             "require": {
@@ -7091,7 +7081,7 @@
                 "php": "^8.1.0"
             },
             "require-dev": {
-                "friendsofphp/php-cs-fixer": "^3.17.0",
+                "friendsofphp/php-cs-fixer": "^3.18.0",
                 "illuminate/view": "^10.5.1",
                 "laravel-zero/framework": "^10.0.2",
                 "mockery/mockery": "^1.5.1",
@@ -7133,20 +7123,20 @@
                 "issues": "https://github.com/laravel/pint/issues",
                 "source": "https://github.com/laravel/pint"
             },
-            "time": "2023-06-12T10:50:04+00:00"
+            "time": "2023-06-20T15:55:03+00:00"
         },
         {
             "name": "laravel/sail",
-            "version": "v1.22.0",
+            "version": "v1.23.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laravel/sail.git",
-                "reference": "923e1e112b6a8598664dbb0ee79dd3137f1c9d56"
+                "reference": "a2e046f748e87d3ef8b2b381e0e5c5a11f34e46b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laravel/sail/zipball/923e1e112b6a8598664dbb0ee79dd3137f1c9d56",
-                "reference": "923e1e112b6a8598664dbb0ee79dd3137f1c9d56",
+                "url": "https://api.github.com/repos/laravel/sail/zipball/a2e046f748e87d3ef8b2b381e0e5c5a11f34e46b",
+                "reference": "a2e046f748e87d3ef8b2b381e0e5c5a11f34e46b",
                 "shasum": ""
             },
             "require": {
@@ -7198,7 +7188,7 @@
                 "issues": "https://github.com/laravel/sail/issues",
                 "source": "https://github.com/laravel/sail"
             },
-            "time": "2023-05-04T14:52:56+00:00"
+            "time": "2023-06-16T21:20:12+00:00"
         },
         {
             "name": "mockery/mockery",
@@ -9512,7 +9502,9 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": [],
+    "stability-flags": {
+        "wovosoft/laravel-letsencrypt-core": 20
+    },
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {

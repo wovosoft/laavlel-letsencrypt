@@ -7,7 +7,7 @@ import {watch} from "./resources/js/vite/watch-and-run";
 export default defineConfig({
     plugins: [
         laravel({
-            input: 'resources/js/app.ts',
+            input: 'resources/js/app.js',
             refresh: true,
         }),
         vue({

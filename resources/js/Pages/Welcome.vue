@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import {Head, useForm} from '@inertiajs/vue3';
+import {Head, useForm, Link} from '@inertiajs/vue3';
 
-import {Container} from "@wovosoft/wovoui";
+import {Card, Container} from "@wovosoft/wovoui";
 
 </script>
 
@@ -9,6 +9,10 @@ import {Container} from "@wovosoft/wovoui";
     <Head title="Welcome"/>
 
     <Container>
-
+        <Card class="mt-3 text-center">
+            <Link class="btn btn-primary" :href="route('certificates.create-order')">
+                Generate Free SSL
+            </Link>
+        </Card>
     </Container>
 </template>

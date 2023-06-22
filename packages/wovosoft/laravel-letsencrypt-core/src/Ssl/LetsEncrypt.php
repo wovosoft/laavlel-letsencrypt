@@ -1,27 +1,31 @@
 <?php
 
-namespace App\Ssl;
+namespace Wovosoft\LaravelLetsencryptCore\Ssl;
 
-use Afosto\Acme\Data\Authorization;
-use Afosto\Acme\Data\Certificate;
-use Afosto\Acme\Data\Order;
 use File;
 use GuzzleHttp\Client as HttpClient;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Support\Facades\Http;
 use League\Flysystem\Filesystem;
-use Afosto\Acme\Client;
+use League\Flysystem\FilesystemException;
 use League\Flysystem\Local\LocalFilesystemAdapter;
 use Mockery\Exception;
+use Wovosoft\LaravelLetsencryptCore\Client;
+use Wovosoft\LaravelLetsencryptCore\Data\Authorization;
+use Wovosoft\LaravelLetsencryptCore\Data\Certificate;
+use Wovosoft\LaravelLetsencryptCore\Data\Order;
 
 /**
  * @link https://github.com/afosto/yaac/blob/master/README.md
  */
 class LetsEncrypt
 {
-    private Client $client;
-    private string $path;
+    protected Client $client;
+    protected string $path;
 
+    /**
+     * @throws GuzzleException
+     */
     public function __construct(
         private readonly string      $username,
         private readonly ClientModes $mode = ClientModes::Staging,
@@ -38,9 +42,9 @@ class LetsEncrypt
 
         $this->client = new Client([
             'username' => $this->username,
-            'fs' => $filesystem,
-            'mode' => $this->mode->value,
-            'basepath' => $this->basepath
+            'fs'       => $filesystem,
+            'mode'     => $this->mode->value,
+            'basepath' => $this->basepath,
         ]);
     }
 
@@ -49,10 +53,6 @@ class LetsEncrypt
         return $this->client;
     }
 
-    /**
-     * @param array<string>|string $domains
-     * @throws \Exception
-     */
     public function createOrder(array|string $domains): Order
     {
         return $this->client->createOrder(
@@ -65,9 +65,7 @@ class LetsEncrypt
         return $order->getId();
     }
 
-    /**
-     * @throws \Exception
-     */
+
     public function getOrder(string|int $id): Order
     {
         return $this->client->getOrder($id);
@@ -113,6 +111,7 @@ class LetsEncrypt
 
     /**
      * @throws \Exception
+     * @throws GuzzleException
      */
     public function selfTest(Authorization $authorization, ValidationTypes $type = ValidationTypes::Http): bool
     {
@@ -133,7 +132,10 @@ class LetsEncrypt
     public function requestHttpValidation(array $authorizations): bool
     {
         foreach ($authorizations as $authorization) {
-            $this->client->validate($authorization->getHttpChallenge(), 15);
+            try {
+                $this->client->validate($authorization->getHttpChallenge(), 15);
+            } catch (GuzzleException|FilesystemException $e) {
+            }
         }
         return true;
     }
@@ -151,14 +153,16 @@ class LetsEncrypt
     }
 
     /**
+     * @throws GuzzleException
+     * @throws FilesystemException
      * @throws \Exception
      */
-    public function getCertificate(Order $order): Certificate
+    public function getCertificate(Order $order): Certificate|false
     {
         if ($this->client->isReady($order)) {
             return $this->client->getCertificate($order);
         }
-        throw new \Exception("Validation is not succeeded");
+        return false;
     }
 
     public function getCert(Certificate $certificate): string
@@ -211,7 +215,7 @@ class LetsEncrypt
             $this->path,
             $this->basepath,
             $userDirectory,
-            $path
+            $path,
         ]);
     }
 
@@ -221,13 +225,21 @@ class LetsEncrypt
         foreach ($authorization->getChallenges() as $challenge) {
             $data[] = [
                 "authorizationURL" => $challenge->getAuthorizationURL(),
-                "url" => $challenge->getUrl(),
-                "status" => $challenge->getStatus(),
-                "type" => $challenge->getType(),
-                "token" => $challenge->getToken(),
+                "url"              => $challenge->getUrl(),
+                "status"           => $challenge->getStatus(),
+                "type"             => $challenge->getType(),
+                "token"            => $challenge->getToken(),
             ];
         }
         return $data;
+    }
+
+    private function getTxtRecord(Authorization $authorization): ?array
+    {
+        if (gettype($authorization->getTxtRecord()) === 'boolean') {
+            return null;
+        }
+        return $authorization->getTxtRecord()->toArray();
     }
 
     /**
@@ -238,27 +250,25 @@ class LetsEncrypt
     public function transformOrder(Order $order, array $authorizations): array
     {
         $output = [
-            "id" => $order->getId(),
-            "domains" => $order->getDomains(),
-            "authorizations" => []
+            "id"             => $order->getId(),
+            "domains"        => $order->getDomains(),
+            "authorizations" => [],
         ];
+
 
         foreach ($authorizations as $authorization) {
             $file = $authorization->getFile();
             $output["authorizations"][] = [
-                "id" => $this->getAuthorizationId($authorization),
-                "domain" => $authorization->getDomain(),
-                "txt_record" => [
-                    "name" => $authorization->getTxtRecord()->getName(),
-                    "value" => $authorization->getTxtRecord()->getValue()
-                ],
-                "expires_at" => $authorization->getExpires(),
+                "id"                => $this->getAuthorizationId($authorization),
+                "domain"            => $authorization->getDomain(),
+                "txt_record"        => $this->getTxtRecord($authorization),
+                "expires_at"        => $authorization->getExpires(),
                 "authorization_url" => $authorization?->getChallenges()[0]?->getAuthorizationURL(),
-                "file" => [
-                    "name" => $file->getFilename(),
-                    "contents" => $file->getContents()
+                "file"              => [
+                    "name"     => $file->getFilename(),
+                    "contents" => $file->getContents(),
                 ],
-                "challenges" => $this->authorizationChallenges($authorization)
+                "challenges"        => $this->authorizationChallenges($authorization),
             ];
         }
         return $output;

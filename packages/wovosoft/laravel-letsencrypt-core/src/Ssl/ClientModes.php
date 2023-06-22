@@ -1,8 +1,9 @@
 <?php
 
-namespace App\Ssl;
+namespace Wovosoft\LaravelLetsencryptCore\Ssl;
 
-use Afosto\Acme\Client;
+
+use Wovosoft\LaravelLetsencryptCore\Client;
 
 enum ClientModes: string
 {

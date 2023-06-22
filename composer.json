@@ -2,11 +2,13 @@
     "name": "laravel/laravel",
     "type": "project",
     "description": "The skeleton application for the Laravel framework.",
-    "keywords": ["laravel", "framework"],
+    "keywords": [
+        "laravel",
+        "framework"
+    ],
     "license": "MIT",
     "require": {
         "php": "^8.2",
-        "afosto/yaac": "^1.5",
         "guzzlehttp/guzzle": "^7.2",
         "inertiajs/inertia-laravel": "^0.6.8",
         "laravel/framework": "^10.10",
@@ -14,7 +16,8 @@
         "laravel/sanctum": "^3.2",
         "laravel/tinker": "^2.8",
         "league/flysystem": "^3.15",
-        "tightenco/ziggy": "^1.0"
+        "tightenco/ziggy": "^1.0",
+        "wovosoft/laravel-letsencrypt-core": "dev-master"
     },
     "require-dev": {
         "barryvdh/laravel-ide-helper": "^2.13",
@@ -68,5 +71,11 @@
         }
     },
     "minimum-stability": "stable",
-    "prefer-stable": true
+    "prefer-stable": true,
+    "repositories": {
+        "wovosoft/laravel-letsencrypt-core": {
+            "type": "path",
+            "url": "./packages/wovosoft/laravel-letsencrypt-core"
+        }
+    }
 }

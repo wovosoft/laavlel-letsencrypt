@@ -38,9 +38,9 @@ Route::middleware([
 CertificateController::routes();
 
 Route::get('/t', function () {
-    $le = new \App\Ssl\LetsEncrypt(
+    $le = new \Wovosoft\LaravelLetsencryptCore\Ssl\LetsEncrypt(
         username: 'narayanadhikary24@gmail.com',
-        mode: \App\Ssl\ClientModes::Live
+        mode: \Wovosoft\LaravelLetsencryptCore\Ssl\ClientModes::Live
     );
     dd($le);
 });
