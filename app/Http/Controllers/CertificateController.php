@@ -33,7 +33,7 @@ class CertificateController extends Controller
             "title" => $domain->domain . " certificates",
             "items" => $domain
                 ->certificates()
-                ->with(['domain:id,url'])
+                ->with(['domain:id,domain'])
                 ->paginate(
                     perPage: $request->input('per_page') ?: 15
                 )

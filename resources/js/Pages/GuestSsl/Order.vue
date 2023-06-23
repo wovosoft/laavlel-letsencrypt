@@ -20,7 +20,7 @@ const theForm = ref<HTMLFormElement>();
 
 function handleSubmission() {
     if (theForm.value?.reportValidity()) {
-        model.post(route('certificates.authorize-order'), {
+        model.post(route('guest-certificates.authorize-order'), {
             onSuccess: (page) => {
                 console.log(page)
             },

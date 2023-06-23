@@ -54,7 +54,7 @@ const validateDomain = (challenge: Challenge) => {
         challenge,
         email: props.order.email,
         order_id: props.order.id
-    }).post(route('certificates.validate-domain'), {
+    }).post(route('guest-certificates.validate-domain'), {
         onSuccess: (page) => {
             console.log(page)
         },
