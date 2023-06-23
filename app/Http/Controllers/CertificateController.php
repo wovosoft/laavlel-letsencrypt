@@ -30,14 +30,14 @@ class CertificateController extends Controller
         }
 
         return Inertia::render("Certificates/Index", [
-            "title" => $domain->url . " certificates",
+            "title" => $domain->domain . " certificates",
             "items" => $domain
                 ->certificates()
                 ->with(['domain:id,url'])
                 ->paginate(
                     perPage: $request->input('per_page') ?: 15
                 )
-                ->appends($request->input())
+                ->appends($request->input()),
         ]);
     }
 }

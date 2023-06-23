@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import {Head, useForm, Link} from '@inertiajs/vue3';
+import {Head, Link} from '@inertiajs/vue3';
 
 import {Card, Container} from "@wovosoft/wovoui";
-
 </script>
 
 <template>

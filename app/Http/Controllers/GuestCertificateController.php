@@ -17,7 +17,7 @@ class GuestCertificateController extends Controller
     public static function routes()
     {
         Route::prefix('guest-certificates')
-            ->name('certificates.')
+            ->name('guest-certificates.')
             ->controller(static::class)
             ->group(function () {
                 Route::get('create-order', 'createOrder')->name('create-order');
