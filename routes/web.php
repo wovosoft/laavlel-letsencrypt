@@ -7,6 +7,8 @@ use App\Http\Controllers\GuestCertificateController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use Wovosoft\LaravelLetsencryptCore\LaravelClient;
+use Wovosoft\LaravelLetsencryptCore\Ssl\ClientModes;
 
 /*
 |--------------------------------------------------------------------------
@@ -21,10 +23,10 @@ use Inertia\Inertia;
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
-        'canLogin' => Route::has('login'),
-        'canRegister' => Route::has('register'),
+        'canLogin'       => Route::has('login'),
+        'canRegister'    => Route::has('register'),
         'laravelVersion' => Application::VERSION,
-        'phpVersion' => PHP_VERSION,
+        'phpVersion'     => PHP_VERSION,
     ]);
 });
 
@@ -44,12 +46,11 @@ Route::middleware([
 
 GuestCertificateController::routes();
 
-//Route::get('/t', function () {
-//    $le = new \Wovosoft\LaravelLetsencryptCore\Ssl\LetsEncrypt(
-//        username: 'narayanadhikary24@gmail.com',
-//        mode: \Wovosoft\LaravelLetsencryptCore\Ssl\ClientModes::Live
-//    );
-//    dd($le);
-//});
+Route::get('/t', function () {
+    $lc = new LaravelClient(
+        mode: ClientModes::Staging
+    );
+    return $lc->getDirectories();
+});
 
 

@@ -19,6 +19,7 @@ return new class extends Migration {
                 ->cascadeOnUpdate()
                 ->cascadeOnDelete();
 
+            $table->string('account_id')->nullable();
             $table->string('email')->unique();
             $table->text('key')->nullable();
             $table->timestamps();
