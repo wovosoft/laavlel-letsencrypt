@@ -4,6 +4,7 @@ use App\Http\Controllers\AccountController;
 use App\Http\Controllers\CertificateController;
 use App\Http\Controllers\DomainController;
 use App\Http\Controllers\GuestCertificateController;
+use App\Http\Controllers\OrderController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -23,10 +24,10 @@ use Wovosoft\LaravelLetsencryptCore\Ssl\ClientModes;
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
-        'canLogin'       => Route::has('login'),
-        'canRegister'    => Route::has('register'),
+        'canLogin' => Route::has('login'),
+        'canRegister' => Route::has('register'),
         'laravelVersion' => Application::VERSION,
-        'phpVersion'     => PHP_VERSION,
+        'phpVersion' => PHP_VERSION,
     ]);
 });
 
@@ -42,6 +43,7 @@ Route::middleware([
     AccountController::routes();
     DomainController::routes();
     CertificateController::routes();
+    OrderController::routes();
 });
 
 GuestCertificateController::routes();

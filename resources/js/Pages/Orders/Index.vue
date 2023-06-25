@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import {computed, PropType, ref} from "vue";
-import {Button, Container, DataTable, FormGroup, Input, Modal} from "@wovosoft/wovoui";
+import {Container, DataTable, FormGroup, Input, Modal} from "@wovosoft/wovoui";
 import {DatatableType} from "@/types";
 import ActionButtons from "@/Components/ActionButtons.vue";
 import BasicDatatable from "@/Components/Datatable/BasicDatatable.vue";
@@ -8,19 +8,16 @@ import {useForm} from "@inertiajs/vue3";
 import route from "ziggy-js";
 import {addToast} from "@/Composables/useToasts";
 import {toDateTime} from "@/Composables/useHelpers";
-import SelectAccount from "@/Components/Selectors/SelectAccount.vue";
+import SelectDomain from "@/Components/Selectors/SelectDomain.vue";
 
 const props = defineProps({
     items: Object as PropType<DatatableType<Account>>,
     queries: Object as PropType<{ [key: string]: any }>
 });
 
-
 const fields = computed(() => [
     {key: 'id'},
-    {key: 'account', formatter: (v, k) => v[k]?.email},
     {key: 'domain'},
-    {key: 'is_ownership_verified', formatter: (v, k) => v[k] ? 'Yes' : 'No'},
     {key: 'created_at', formatter: (v, k) => toDateTime(v[k])},
     {key: 'action', tdClass: 'text-end', thClass: 'text-end'},
 ]);
@@ -43,7 +40,7 @@ const editItem = (item) => {
     isEdit.value = true;
 };
 
-const account_id = ref<number>();
+const domain_id = ref<number>();
 const theForm = ref<HTMLFormElement>();
 const handleSubmission = () => {
     if (theForm.value?.reportValidity()) {
@@ -58,7 +55,7 @@ const handleSubmission = () => {
             }
         };
 
-        formItem.put(route('domains.store', {account: account_id.value}), options);
+        formItem.put(route('orders.store', {domain: domain_id.value}), options);
     }
 };
 </script>
@@ -95,7 +92,7 @@ const handleSubmission = () => {
                 {{ currentItem.domain }}
             </h2>
             <div>
-                Account : <span class="text-muted">{{ currentItem?.account?.email }}</span><br/>
+                Domain : <span class="text-muted">{{ currentItem?.domain }}</span><br/>
                 Created At : {{ currentItem?.created_at }}
             </div>
         </Modal>
@@ -114,15 +111,7 @@ const handleSubmission = () => {
                title="Domain Details">
             <form ref="theForm" @submit.prevent="handleSubmission">
                 <FormGroup label="Account No. *">
-                    <SelectAccount preload v-model="account_id"/>
-                </FormGroup>
-                <FormGroup label="Domain Name *">
-                    <Input size="sm"
-                           required
-                           v-model="formItem.domain"
-                           placeholder="Domain Name"
-                           name="domain"
-                    />
+                    <SelectDomain preload v-model="domain_id"/>
                 </FormGroup>
                 <!--                <pre>{{ formItem }}</pre>-->
             </form>

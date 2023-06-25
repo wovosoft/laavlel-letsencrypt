@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\DomainStoreRequest;
 use App\Models\Account;
 use App\Models\Domain;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
@@ -42,20 +43,14 @@ class DomainController extends Controller
 
     public function options(Request $request)
     {
-        $items = fn() => $request
+        return $request
             ->user()
             ->domains()
-            ->select([
-                DB::raw('id as value'),
-                DB::raw('domain as text')
-            ])
+            ->when($request->input('query'), function (Builder $builder, string $query) {
+                $builder->where('domain', 'like', "%$query%");
+            })
             ->limit(30)
             ->get();
-
-        return Inertia::render("Domains/Index", [
-            "title" => "My Domains",
-            "items" => $items
-        ]);
     }
 
     public function index(Request $request)
