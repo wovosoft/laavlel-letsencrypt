@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\OrderStoreRequest;
+use App\Models\Domain;
 use App\Models\Order;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
@@ -20,17 +21,17 @@ class OrderController extends Controller
             ->controller(static::class)
             ->group(function () {
                 Route::match(['get', 'post'], '/', 'index')->name('index');
-                Route::put('store', 'store')->name('store');
+                Route::put('store/for-domain/{domain}', 'store')->name('store');
                 Route::match(['get', 'post'], 'options', 'options')->name('options');
             });
     }
 
-    public function store(OrderStoreRequest $request)
+    public function store(OrderStoreRequest $request, Domain $domain)
     {
-        return DB::transaction(function () use ($request) {
+        return DB::transaction(function () use ($domain, $request) {
             $order = new Order();
             $order->forceFill($request->validated());
-            $order->saveOrFail();
+            $domain->orders()->save($order);
 
             return back()->with('notification', [
                 "message" => "Successfully Done",

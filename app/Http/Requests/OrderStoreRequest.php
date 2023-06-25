@@ -2,6 +2,8 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Domain;
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class OrderStoreRequest extends FormRequest
@@ -11,13 +13,13 @@ class OrderStoreRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return auth()->check() && $this->route('domain')?->account()->where('user_id', '=', auth()->id())->exists();
     }
 
     /**
      * Get the validation rules that apply to the request.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array|string>
+     * @return array<string, ValidationRule|array|string>
      */
     public function rules(): array
     {

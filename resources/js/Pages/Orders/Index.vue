@@ -43,7 +43,7 @@ const editItem = (item) => {
 const domain_id = ref<number>();
 const theForm = ref<HTMLFormElement>();
 const handleSubmission = () => {
-    if (theForm.value?.reportValidity()) {
+    if (theForm.value?.reportValidity() && domain_id.value) {
         const options = {
             onSuccess: page => {
                 addToast(page.props['notification']);
