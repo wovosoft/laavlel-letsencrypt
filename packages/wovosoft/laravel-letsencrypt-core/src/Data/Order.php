@@ -2,6 +2,8 @@
 
 namespace Wovosoft\LaravelLetsencryptCore\Data;
 
+use Illuminate\Support\Collection;
+
 class Order extends BaseData
 {
     protected \DateTime $expiresAt;
@@ -30,25 +32,16 @@ class Order extends BaseData
      */
     public function getId(): string
     {
-        return substr($this->url, strrpos($this->url, '/') + 1);
-    }
-
-    /**
-     * Returns the order URL
-     * @return string
-     */
-    public function getURL(): string
-    {
-        return $this->url;
+        return basename($this->url);
     }
 
     /**
      * Return set of authorizations for the order
-     * @return string[]
+     * @return Collection
      */
-    public function getAuthorizationURLs(): array
+    public function getAuthorizationURLs(): Collection
     {
-        return $this->authorizations;
+        return collect($this->authorizations);
     }
 
     /**
@@ -87,6 +80,11 @@ class Order extends BaseData
         return $this->finalizeURL;
     }
 
+    public function getUrl()
+    {
+        return $this->url;
+    }
+
     /**
      * Returns domains for the order
      * @return array
@@ -99,13 +97,13 @@ class Order extends BaseData
     public function toArray(): array
     {
         return [
-            "domains"        => $this->domains,
-            "url"            => $this->url,
-            "status"         => $this->status,
-            "expiresAt"      => $this->expiresAt,
-            "identifiers"    => $this->identifiers,
+            "domains" => $this->domains,
+            "url" => $this->url,
+            "status" => $this->status,
+            "expiresAt" => $this->expiresAt,
+            "identifiers" => $this->identifiers,
             "authorizations" => $this->authorizations,
-            "finalizeUR"     => $this->finalizeURL,
+            "finalizeURL" => $this->finalizeURL,
         ];
     }
 

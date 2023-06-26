@@ -3,10 +3,10 @@
 namespace Wovosoft\LaravelLetsencryptCore\Ssl;
 
 
-use Wovosoft\LaravelLetsencryptCore\Client;
+use Wovosoft\LaravelLetsencryptCore\LaravelClient;
 
 enum ValidationTypes: string
 {
-    case Http = Client::VALIDATION_HTTP;
-    case Dns = Client::VALIDATION_DNS;
+    case Http = LaravelClient::VALIDATION_HTTP;
+    case Dns = LaravelClient::VALIDATION_DNS;
 }

@@ -5,12 +5,13 @@ namespace Wovosoft\LaravelLetsencryptCore\Ssl;
 use File;
 use GuzzleHttp\Client as HttpClient;
 use GuzzleHttp\Exception\GuzzleException;
+use http\Client;
 use Illuminate\Support\Facades\Http;
 use League\Flysystem\Filesystem;
 use League\Flysystem\FilesystemException;
 use League\Flysystem\Local\LocalFilesystemAdapter;
 use Mockery\Exception;
-use Wovosoft\LaravelLetsencryptCore\Client;
+use Wovosoft\LaravelLetsencryptCore\LaravelClient;
 use Wovosoft\LaravelLetsencryptCore\Data\Authorization;
 use Wovosoft\LaravelLetsencryptCore\Data\Certificate;
 use Wovosoft\LaravelLetsencryptCore\Data\Order;
@@ -20,7 +21,7 @@ use Wovosoft\LaravelLetsencryptCore\Data\Order;
  */
 class LetsEncrypt
 {
-    protected Client $client;
+    protected LaravelClient $client;
     protected string $path;
 
     /**
@@ -42,13 +43,13 @@ class LetsEncrypt
 
         $this->client = new Client([
             'username' => $this->username,
-            'fs'       => $filesystem,
-            'mode'     => $this->mode->value,
+            'fs' => $filesystem,
+            'mode' => $this->mode->value,
             'basepath' => $this->basepath,
         ]);
     }
 
-    public function getClient(): Client
+    public function getClient(): LaravelClient
     {
         return $this->client;
     }
@@ -225,10 +226,10 @@ class LetsEncrypt
         foreach ($authorization->getChallenges() as $challenge) {
             $data[] = [
                 "authorizationURL" => $challenge->getAuthorizationURL(),
-                "url"              => $challenge->getUrl(),
-                "status"           => $challenge->getStatus(),
-                "type"             => $challenge->getType(),
-                "token"            => $challenge->getToken(),
+                "url" => $challenge->getUrl(),
+                "status" => $challenge->getStatus(),
+                "type" => $challenge->getType(),
+                "token" => $challenge->getToken(),
             ];
         }
         return $data;
@@ -250,8 +251,8 @@ class LetsEncrypt
     public function transformOrder(Order $order, array $authorizations): array
     {
         $output = [
-            "id"             => $order->getId(),
-            "domains"        => $order->getDomains(),
+            "id" => $order->getId(),
+            "domains" => $order->getDomains(),
             "authorizations" => [],
         ];
 
@@ -259,16 +260,16 @@ class LetsEncrypt
         foreach ($authorizations as $authorization) {
             $file = $authorization->getFile();
             $output["authorizations"][] = [
-                "id"                => $this->getAuthorizationId($authorization),
-                "domain"            => $authorization->getDomain(),
-                "txt_record"        => $this->getTxtRecord($authorization),
-                "expires_at"        => $authorization->getExpires(),
+                "id" => $this->getAuthorizationId($authorization),
+                "domain" => $authorization->getDomain(),
+                "txt_record" => $this->getTxtRecord($authorization),
+                "expires_at" => $authorization->getExpires(),
                 "authorization_url" => $authorization?->getChallenges()[0]?->getAuthorizationURL(),
-                "file"              => [
-                    "name"     => $file->getFilename(),
+                "file" => [
+                    "name" => $file->getFilename(),
                     "contents" => $file->getContents(),
                 ],
-                "challenges"        => $this->authorizationChallenges($authorization),
+                "challenges" => $this->authorizationChallenges($authorization),
             ];
         }
         return $output;

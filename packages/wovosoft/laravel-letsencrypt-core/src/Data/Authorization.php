@@ -2,7 +2,7 @@
 
 namespace Wovosoft\LaravelLetsencryptCore\Data;
 
-use Wovosoft\LaravelLetsencryptCore\Client;
+use Wovosoft\LaravelLetsencryptCore\LaravelClient;
 use Wovosoft\LaravelLetsencryptCore\Helper;
 
 class Authorization extends BaseData
@@ -65,7 +65,7 @@ class Authorization extends BaseData
     public function getHttpChallenge(): Challenge|bool
     {
         foreach ($this->getChallenges() as $challenge) {
-            if ($challenge->getType() == Client::VALIDATION_HTTP) {
+            if ($challenge->getType() == LaravelClient::VALIDATION_HTTP) {
                 return $challenge;
             }
         }
@@ -79,7 +79,7 @@ class Authorization extends BaseData
     public function getDnsChallenge(): Challenge|bool
     {
         foreach ($this->getChallenges() as $challenge) {
-            if ($challenge->getType() == Client::VALIDATION_DNS) {
+            if ($challenge->getType() == LaravelClient::VALIDATION_DNS) {
                 return $challenge;
             }
         }

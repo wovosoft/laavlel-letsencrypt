@@ -3,10 +3,10 @@
 namespace Wovosoft\LaravelLetsencryptCore\Ssl;
 
 
-use Wovosoft\LaravelLetsencryptCore\Client;
+use Wovosoft\LaravelLetsencryptCore\LaravelClient;
 
 enum ClientModes: string
 {
-    case Live = Client::MODE_LIVE;
-    case Staging = Client::MODE_STAGING;
+    case Live = LaravelClient::MODE_LIVE;
+    case Staging = LaravelClient::MODE_STAGING;
 }

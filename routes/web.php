@@ -5,12 +5,12 @@ use App\Http\Controllers\CertificateController;
 use App\Http\Controllers\DomainController;
 use App\Http\Controllers\GuestCertificateController;
 use App\Http\Controllers\OrderController;
+use App\Models\Account;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Wovosoft\LaravelLetsencryptCore\LaravelClient;
 use Wovosoft\LaravelLetsencryptCore\Ssl\ClientModes;
-
 
 
 Route::get('/', function () {
@@ -40,10 +40,17 @@ Route::middleware([
 GuestCertificateController::routes();
 
 Route::get('/t', function () {
+    $account = Account::first();
+
     $lc = new LaravelClient(
-        mode: ClientModes::Staging
+        mode: ClientModes::Staging,
+        username: $account->email
     );
-    return $lc->getDirectories();
+
+    $domain = $account->domains()->first()->pluck('domain')->toArray();
+    $order = $lc->createOrder($domain);
+    dd($lc->getOrder($order->getId()));
+
 });
 
 
