@@ -10,7 +10,6 @@ use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
-use League\Flysystem\FilesystemException;
 use OpenSSLAsymmetricKey;
 use Wovosoft\LaravelLetsencryptCore\Data\Account;
 use Wovosoft\LaravelLetsencryptCore\Data\Authorization;
@@ -20,7 +19,6 @@ use Wovosoft\LaravelLetsencryptCore\Data\Directories;
 use Wovosoft\LaravelLetsencryptCore\Data\Order;
 use GuzzleHttp\Client as HttpClient;
 use GuzzleHttp\Exception\RequestException;
-use Psr\Http\Message\ResponseInterface;
 use Wovosoft\LaravelLetsencryptCore\Ssl\ClientModes;
 
 class LaravelClient
@@ -73,7 +71,7 @@ class LaravelClient
     protected ?string $digest = null;
 
     protected ?HttpClient $httpClient = null;
-    protected Filesystem $filesystem;
+    protected ?Filesystem $filesystem;
 
 
     /**
@@ -85,6 +83,11 @@ class LaravelClient
         public ?string     $basePath = "le",
         public ?string     $source_ip = null
     )
+    {
+        $this->init();
+    }
+
+    protected function init(): void
     {
         $this->filesystem = Storage::disk('local');
 

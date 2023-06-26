@@ -21,7 +21,7 @@ return new class extends Migration {
 
             $table->string('account_id')->nullable();
             $table->string('email')->unique();
-            $table->text('key')->nullable();
+            $table->boolean('is_valid')->default(false);
             $table->timestamps();
         });
     }

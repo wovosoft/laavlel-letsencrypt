@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Inertia\Response;
+use Wovosoft\LaravelLetsencryptCore\LaravelClient;
+use Wovosoft\LaravelLetsencryptCore\Ssl\ClientModes;
 
 class AccountController extends Controller
 {
@@ -22,7 +24,30 @@ class AccountController extends Controller
                 Route::match(['get', 'post'], '/', 'index')->name('index');
                 Route::match(['get', 'post'], 'options', 'options')->name('options');
                 Route::put('store', 'store')->name('store');
+                Route::post('verify/{account}', 'verify')->name('verify');
             });
+    }
+
+    /**
+     * @throws \Exception
+     */
+    public function verify(Account $account)
+    {
+        if ($account->user_id !== auth()->id()) {
+            throw new \Exception("Account doesn't belongs to You");
+        }
+
+        $lc = new LaravelClient(
+            mode: ClientModes::Staging,
+            username: $account->email
+        );
+
+        $leAccount = $lc->getAccount();
+        $account->account_id = $leAccount->getId();
+        $account->is_valid = $account->isValid;
+        $account->saveOrFail();
+        return $account;
+
     }
 
     public function store(AccountStoreRequest $request)
@@ -33,6 +58,7 @@ class AccountController extends Controller
             $request->user()->accounts()->save(
                 $account
             );
+
 
             return back()->with('notification', [
                 'message' => "Successfully Done",

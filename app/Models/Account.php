@@ -14,6 +14,7 @@ use Wovosoft\LaravelLetsencryptCore\Ssl\ClientModes;
  *
  * @property int $id
  * @property int $user_id
+ * @property string|null $account_id
  * @property string $email
  * @property string|null $key
  * @property \Illuminate\Support\Carbon|null $created_at
@@ -25,6 +26,7 @@ use Wovosoft\LaravelLetsencryptCore\Ssl\ClientModes;
  * @method static \Illuminate\Database\Eloquent\Builder|Account newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Account newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Account query()
+ * @method static \Illuminate\Database\Eloquent\Builder|Account whereAccountId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Account whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Account whereEmail($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Account whereId($value)

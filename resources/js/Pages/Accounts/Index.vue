@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import {computed, PropType, ref} from "vue";
-import {Container, DataTable, Feedback, FormGroup, Input, Modal} from "@wovosoft/wovoui";
+import {Button, Container, DataTable, Feedback, FormGroup, Input, Modal, Spinner} from "@wovosoft/wovoui";
 import {DatatableType} from "@/types";
 import ActionButtons from "@/Components/ActionButtons.vue";
 import BasicDatatable from "@/Components/Datatable/BasicDatatable.vue";
@@ -58,6 +58,19 @@ const handleSubmission = () => {
         formItem.put(route('accounts.store'), options);
     }
 };
+
+const veryForm = useForm({});
+
+function verifyAccount(account_id: number | string) {
+    veryForm.post(route('accounts.verify', {account: Number(account_id)}), {
+        onSuccess: (page) => {
+            console.log(page)
+        },
+        onError: (errors) => {
+            console.log(errors)
+        }
+    })
+}
 </script>
 
 <template>
@@ -75,8 +88,14 @@ const handleSubmission = () => {
                 <template #cell(action)="row">
                     <ActionButtons
                         @click:view="showItem(row.item)"
-                        no-edit
-                    />
+                        no-edit>
+                        <template #prepend>
+                            <Button variant="primary" @click="verifyAccount(row.item.id)">
+                                <Spinner size="sm" v-if="veryForm.processing"/>
+                                Verify
+                            </Button>
+                        </template>
+                    </ActionButtons>
                 </template>
             </DataTable>
         </BasicDatatable>

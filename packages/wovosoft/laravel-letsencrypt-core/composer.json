@@ -24,7 +24,6 @@
         }
     },
     "require": {
-        "league/flysystem": "^1.0|^3.0",
         "ext-openssl": "*",
         "ext-json": "*"
     }

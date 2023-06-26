@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import {computed, PropType, ref} from "vue";
-import {Container, DataTable, FormGroup, Input, Modal} from "@wovosoft/wovoui";
+import {Button, Container, DataTable, FormGroup, Input, Modal} from "@wovosoft/wovoui";
 import {DatatableType} from "@/types";
 import ActionButtons from "@/Components/ActionButtons.vue";
 import BasicDatatable from "@/Components/Datatable/BasicDatatable.vue";
@@ -17,7 +17,7 @@ const props = defineProps({
 
 const fields = computed(() => [
     {key: 'id'},
-    {key: 'domain'},
+    {key: 'domain', formatter: (v, k) => v[k]?.domain},
     {key: 'created_at', formatter: (v, k) => toDateTime(v[k])},
     {key: 'action', tdClass: 'text-end', thClass: 'text-end'},
 ]);
@@ -75,8 +75,13 @@ const handleSubmission = () => {
                 <template #cell(action)="row">
                     <ActionButtons
                         @click:view="showItem(row.item)"
-                        no-edit
-                    />
+                        no-edit>
+                        <template #prepend>
+                            <Button>
+                                Verify
+                            </Button>
+                        </template>
+                    </ActionButtons>
                 </template>
             </DataTable>
         </BasicDatatable>
@@ -89,10 +94,9 @@ const handleSubmission = () => {
                size="lg"
                title="Domain Details">
             <h2>
-                {{ currentItem.domain }}
+                {{ currentItem.domain?.domain }}
             </h2>
             <div>
-                Domain : <span class="text-muted">{{ currentItem?.domain }}</span><br/>
                 Created At : {{ currentItem?.created_at }}
             </div>
         </Modal>

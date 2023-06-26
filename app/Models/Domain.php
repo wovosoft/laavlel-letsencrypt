@@ -15,12 +15,14 @@ use Illuminate\Support\Carbon;
  * @property int $id
  * @property int $account_id
  * @property string $domain
- * @property int $is_ownership_verified
+ * @property bool $is_ownership_verified
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
- * @property-read Account $account
- * @property-read Collection<int, Certificate> $certificates
+ * @property-read \App\Models\Account $account
+ * @property-read Collection<int, \App\Models\Certificate> $certificates
  * @property-read int|null $certificates_count
+ * @property-read Collection<int, \App\Models\Order> $orders
+ * @property-read int|null $orders_count
  * @method static \Illuminate\Database\Eloquent\Builder|Domain newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Domain newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Domain query()

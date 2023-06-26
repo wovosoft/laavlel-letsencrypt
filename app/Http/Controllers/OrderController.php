@@ -45,6 +45,15 @@ class OrderController extends Controller
         return Inertia::render("Orders/Index", [
             "title" => "Order List",
             "items" => fn() => Order::query()
+                ->whereExists(function (\Illuminate\Database\Query\Builder $builder) {
+                    $builder
+                        ->select("accounts.*")
+                        ->from("accounts")
+                        ->join("domains", "domains.account_id", "=", DB::raw("accounts.id"))
+                        ->where("accounts.user_id", "=", auth()->id())
+                        ->where("orders.domain_id", "=", DB::raw("domains.id"));
+                })
+                ->with(['domain'])
                 ->when($request->input('query'), function (Builder $builder, string $query) {
                     $builder->where('domain', 'like', "%$query%");
                 })
