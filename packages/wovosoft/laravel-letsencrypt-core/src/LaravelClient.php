@@ -80,16 +80,26 @@ class LaravelClient
     public function __construct(
         public ClientModes $mode,
         public string      $username,
-        public ?string     $basePath = "le",
+        public ?string     $basePath = null,
+        public ?string     $disk = null,
         public ?string     $source_ip = null
     )
     {
+        if (!$this->basePath) {
+            $this->basePath = config("lets_encrypt.basepath");
+        }
+        if ($this->disk) {
+            $this->disk = config("lets_encrypt.disk");
+        }
         $this->init();
     }
 
+    /**
+     * @throws Exception
+     */
     protected function init(): void
     {
-        $this->filesystem = Storage::disk('local');
+        $this->filesystem = Storage::disk($this->disk);
 
         $this->directories = new Directories($this->getClient()->get("/directory")->object());
 
@@ -326,7 +336,6 @@ class LaravelClient
      * @param Order $order
      * @return Certificate
      * @throws Exception
-     * @throws GuzzleException
      */
     public function getCertificate(Order $order): Certificate
     {
@@ -342,12 +351,12 @@ class LaravelClient
             )
         );
 
-        $data = json_decode((string)$response->getBody(), true);
+        $data = $response->object();
         $certificateResponse = $this->request(
             $data['certificate'],
             $this->signPayloadKid(null, $data['certificate'])
         );
-        $chain = preg_replace('/^[ \t]*[\r\n]+/m', '', (string)$certificateResponse->getBody());
+        $chain = preg_replace('/^[ \t]*[\r\n]+/m', '', (string)$certificateResponse->body());
         return new Certificate($privateKey, $csr, $chain);
     }
 
@@ -366,9 +375,7 @@ class LaravelClient
             ->getClient()
             ->contentType('application/jose+json')
             ->post($this->directories->newAccount, $this->signPayloadJWK(
-                [
-                    'onlyReturnExisting' => true,
-                ],
+                ['onlyReturnExisting' => true],
                 $this->directories->newAccount
             ));
 
@@ -516,7 +523,7 @@ class LaravelClient
      * Return the Flysystem filesystem
      * @return Filesystem
      */
-    protected function getFilesystem(): Filesystem
+    public function getFilesystem(): Filesystem
     {
         return $this->filesystem;
     }
@@ -527,7 +534,7 @@ class LaravelClient
      * @return string
      * @throws Exception
      */
-    protected function getDigest(): string
+    public function getDigest(): string
     {
         if ($this->digest === null) {
             $this->digest = Helper::toSafeString(hash('sha256', json_encode($this->getJWKHeader()), true));

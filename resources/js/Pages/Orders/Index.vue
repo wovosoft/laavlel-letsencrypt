@@ -6,7 +6,6 @@ import ActionButtons from "@/Components/ActionButtons.vue";
 import BasicDatatable from "@/Components/Datatable/BasicDatatable.vue";
 import {useForm} from "@inertiajs/vue3";
 import route from "ziggy-js";
-import {addToast} from "@/Composables/useToasts";
 import {toDateTime} from "@/Composables/useHelpers";
 import SelectDomain from "@/Components/Selectors/SelectDomain.vue";
 
@@ -46,7 +45,6 @@ const handleSubmission = () => {
     if (theForm.value?.reportValidity() && domain_id.value) {
         const options = {
             onSuccess: page => {
-                addToast(page.props['notification']);
                 formItem.reset();
                 isEdit.value = false;
             },

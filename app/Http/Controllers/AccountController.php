@@ -29,7 +29,7 @@ class AccountController extends Controller
     }
 
     /**
-     * @throws \Exception
+     * @throws \Exception|\Throwable
      */
     public function verify(Account $account)
     {
@@ -44,9 +44,14 @@ class AccountController extends Controller
 
         $leAccount = $lc->getAccount();
         $account->account_id = $leAccount->getId();
-        $account->is_valid = $account->isValid;
+        $account->is_valid = $leAccount->isValid();
         $account->saveOrFail();
-        return $account;
+        return back()->with('notification', [
+            "message" => "Successfully Done",
+            "variant" => "primary",
+            "item" => $account,
+            "le_account" => $leAccount->toArray()
+        ]);
 
     }
 
@@ -92,6 +97,8 @@ class AccountController extends Controller
             ->select([
                 'id',
                 'user_id',
+                'account_id',
+                'is_valid',
                 'email',
                 'created_at'
             ])

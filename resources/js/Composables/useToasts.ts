@@ -12,10 +12,16 @@ type ToastType = {
 };
 export const toasts = ref<ToastType[]>([]);
 export const addToast = (toast: ToastType) => {
+    const key = uid();
     toasts.value.push({
         ...toast,
-        key: uid()
+        key
     });
+    setTimeout(() => {
+        if (toasts.value.findIndex(toast => toast.key === key) > -1) {
+            removeToast(key);
+        }
+    }, 3000)
 };
 export const removeToast = (key: string | number) => {
     const index = toasts.value.findIndex(i => i.key === key);

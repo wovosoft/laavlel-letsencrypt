@@ -6,7 +6,6 @@ import ActionButtons from "@/Components/ActionButtons.vue";
 import BasicDatatable from "@/Components/Datatable/BasicDatatable.vue";
 import {useForm} from "@inertiajs/vue3";
 import route from "ziggy-js";
-import {addToast} from "@/Composables/useToasts";
 import {toDateTime} from "@/Composables/useHelpers";
 
 const props = defineProps({
@@ -17,6 +16,7 @@ const props = defineProps({
 
 const fields = computed(() => [
     {key: 'id'},
+    {key: 'account_id'},
     {key: 'email'},
     {key: 'created_at', formatter: (v, k) => toDateTime(v[k])},
     {key: 'action', tdClass: 'text-end', thClass: 'text-end'},
@@ -46,7 +46,6 @@ const handleSubmission = () => {
     if (theForm.value?.reportValidity()) {
         const options = {
             onSuccess: page => {
-                addToast(page.props['notification']);
                 formItem.reset();
                 isEdit.value = false;
             },
@@ -59,15 +58,21 @@ const handleSubmission = () => {
     }
 };
 
-const veryForm = useForm({});
+const veryForm = useForm({
+    account_id: null
+});
 
 function verifyAccount(account_id: number | string) {
+    veryForm.account_id = account_id;
     veryForm.post(route('accounts.verify', {account: Number(account_id)}), {
         onSuccess: (page) => {
             console.log(page)
         },
         onError: (errors) => {
             console.log(errors)
+        },
+        onFinish: () => {
+            veryForm.account_id = null;
         }
     })
 }
@@ -90,8 +95,8 @@ function verifyAccount(account_id: number | string) {
                         @click:view="showItem(row.item)"
                         no-edit>
                         <template #prepend>
-                            <Button variant="primary" @click="verifyAccount(row.item.id)">
-                                <Spinner size="sm" v-if="veryForm.processing"/>
+                            <Button variant="primary" @click="verifyAccount(row.item.id)" v-if="!row.item.is_valid">
+                                <Spinner size="sm" v-if="veryForm.processing && row.item.id===veryForm.account_id"/>
                                 Verify
                             </Button>
                         </template>

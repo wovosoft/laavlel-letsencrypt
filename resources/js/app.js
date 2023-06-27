@@ -12,9 +12,23 @@ const appName = window.document.getElementsByTagName('title')[0]?.innerText || '
 import AppLayout from "@/Layouts/AuthenticatedLayout.vue";
 import i18n from "@/Lang";
 import {isLoading} from "@/Composables/useLoading";
+import {addToast} from "@/Composables/useToasts";
 
-router.on('start', () => isLoading.value = true);
-router.on('finish', () => isLoading.value = false);
+router.on('start', (e) => {
+    isLoading.value = true
+});
+router.on('finish', (e) => {
+    isLoading.value = false
+});
+router.on("success", (e) => {
+    if (e.detail.page.props.notification) {
+        addToast(e.detail.page.props.notification);
+    }
+});
+router.on("error", (e) => {
+    console.log(e.detail.errors)
+});
+
 
 createInertiaApp({
     title: (title) => `${title} - ${appName}`,

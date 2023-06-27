@@ -74,11 +74,11 @@ class Account extends BaseData
     public function toArray(): array
     {
         return [
-            "contact"   => $this->contact,
-            "createdAt" => $this->createdAt,
-            "isValid"   => $this->isValid,
-            "initialIp" => $this->initialIp,
-            "accountUR" => $this->accountURL,
+            "contact" => $this->getContact(),
+            "createdAt" => $this->getCreatedAt(),
+            "isValid" => $this->isValid(),
+            "initialIp" => $this->getInitialIp(),
+            "accountURL" => $this->getAccountURL(),
         ];
     }
 }

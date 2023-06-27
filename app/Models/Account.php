@@ -39,10 +39,14 @@ class Account extends Model
 {
     use HasFactory;
 
-    public function getAccount()
+    /**
+     * @throws \Exception
+     */
+    public function getAccount(): \Wovosoft\LaravelLetsencryptCore\Data\Account
     {
         $lc = new LaravelClient(
-            mode: ClientModes::Staging
+            mode: config("lets_encrypt.mode"),
+            username: $this->email
         );
         return $lc->getAccount();
     }

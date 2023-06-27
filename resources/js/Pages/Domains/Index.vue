@@ -6,7 +6,6 @@ import ActionButtons from "@/Components/ActionButtons.vue";
 import BasicDatatable from "@/Components/Datatable/BasicDatatable.vue";
 import {useForm} from "@inertiajs/vue3";
 import route from "ziggy-js";
-import {addToast} from "@/Composables/useToasts";
 import {toDateTime} from "@/Composables/useHelpers";
 import SelectAccount from "@/Components/Selectors/SelectAccount.vue";
 
@@ -49,7 +48,6 @@ const handleSubmission = () => {
     if (theForm.value?.reportValidity()) {
         const options = {
             onSuccess: page => {
-                addToast(page.props['notification']);
                 formItem.reset();
                 isEdit.value = false;
             },
@@ -61,6 +59,11 @@ const handleSubmission = () => {
         formItem.put(route('domains.store', {account: account_id.value}), options);
     }
 };
+
+const isShownVerificationModal = ref<boolean>(false);
+const showVerificationModal = () => {
+    isShownVerificationModal.value = true;
+}
 </script>
 
 <template>
@@ -76,10 +79,13 @@ const handleSubmission = () => {
                 :items="items?.data"
                 :fields="fields">
                 <template #cell(action)="row">
-                    <ActionButtons
-                        @click:view="showItem(row.item)"
-                        no-edit
-                    />
+                    <ActionButtons @click:view="showItem(row.item)" no-edit>
+                        <template #prepend>
+                            <Button>
+                                Verify
+                            </Button>
+                        </template>
+                    </ActionButtons>
                 </template>
             </DataTable>
         </BasicDatatable>
@@ -126,6 +132,11 @@ const handleSubmission = () => {
                 </FormGroup>
                 <!--                <pre>{{ formItem }}</pre>-->
             </form>
+        </Modal>
+        <Modal v-model="isShownVerificationModal"
+               title="Verify Domain"
+               shrink>
+
         </Modal>
     </Container>
 </template>
