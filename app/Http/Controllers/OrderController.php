@@ -11,9 +11,23 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Inertia\Response;
+use Wovosoft\LaravelLetsencryptCore\LaravelClient;
 
 class OrderController extends Controller
 {
+    private ?LaravelClient $client = null;
+
+    /**
+     * @throws \Exception
+     */
+    private function le(Domain $domain)
+    {
+        if (!$this->client) {
+            $this->client = $domain->leClient();
+        }
+        return $domain->leClient();
+    }
+
     public static function routes(): void
     {
         Route::prefix('orders')
@@ -23,6 +37,7 @@ class OrderController extends Controller
                 Route::match(['get', 'post'], '/', 'index')->name('index');
                 Route::put('store/for-domain/{domain}', 'store')->name('store');
                 Route::match(['get', 'post'], 'options', 'options')->name('options');
+                Route::post('get-authorizations/{order}', 'getAuthorizations')->name('get-authorizations');
             });
     }
 
@@ -33,9 +48,12 @@ class OrderController extends Controller
             $order->forceFill($request->validated());
             $domain->orders()->save($order);
 
+            $leOrder = $order->leOrder();
+
             return back()->with('notification', [
                 "message" => "Successfully Done",
-                "variant" => "primary"
+                "variant" => "primary",
+                "le_order" => $leOrder->toArray()
             ]);
         });
     }
@@ -72,5 +90,16 @@ class OrderController extends Controller
             })
             ->limit(30)
             ->get();
+    }
+
+
+    /**
+     * @throws \Throwable
+     */
+    public function getAuthorizations(Request $request, Order $order)
+    {
+        return $order->leAuthorizations()->toArray();
+
+
     }
 }

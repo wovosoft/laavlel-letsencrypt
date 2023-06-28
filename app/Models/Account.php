@@ -16,7 +16,7 @@ use Wovosoft\LaravelLetsencryptCore\Ssl\ClientModes;
  * @property int $user_id
  * @property string|null $account_id
  * @property string $email
- * @property string|null $key
+ * @property int $is_valid
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Certificate> $certificates
@@ -30,7 +30,7 @@ use Wovosoft\LaravelLetsencryptCore\Ssl\ClientModes;
  * @method static \Illuminate\Database\Eloquent\Builder|Account whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Account whereEmail($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Account whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder|Account whereKey($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Account whereIsValid($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Account whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Account whereUserId($value)
  * @mixin \Eloquent

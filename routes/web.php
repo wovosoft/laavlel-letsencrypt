@@ -49,7 +49,7 @@ Route::get('/t', function () {
 
     $domain = $account->domains()->first()->pluck('domain')->toArray();
     $order = $lc->createOrder($domain);
-    dd($lc->getOrder($order->getId()));
+    dd($order);
 
 });
 

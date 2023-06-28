@@ -8,6 +8,7 @@ use GuzzleHttp\Promise\PromiseInterface;
 use Illuminate\Contracts\Filesystem\Filesystem;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Client\Response;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use OpenSSLAsymmetricKey;
@@ -241,10 +242,9 @@ class LaravelClient
      * Obtain authorizations
      *
      * @param Order $order
-     * @return array|Authorization[]
-     * @throws Exception
+     * @return Collection<Authorization>
      */
-    public function authorize(Order $order): array
+    public function authorize(Order $order): Collection
     {
         return $order
             ->getAuthorizationURLs()
@@ -273,9 +273,8 @@ class LaravelClient
                     $authorization->addChallenge($challenge);
                 }
 
-                return $authorization;
-            })
-            ->toArray();
+                return $authorization->toArray();
+            });
     }
 
     /**

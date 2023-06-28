@@ -20,6 +20,8 @@ return new class extends Migration {
                 ->cascadeOnDelete()
                 ->cascadeOnUpdate();
 
+            $table->string("order_id")->nullable();
+
             $table->dateTime('expires')->nullable();
 
             $table->timestamps();

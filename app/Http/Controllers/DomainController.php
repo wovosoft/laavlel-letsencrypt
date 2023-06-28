@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use Wovosoft\LaravelLetsencryptCore\LaravelClient;
 
 class DomainController extends Controller
 {
@@ -58,7 +59,7 @@ class DomainController extends Controller
         $items = fn() => $request
             ->user()
             ->domains()
-            ->with(['account:id,email'])
+            ->with(['account:id,email', 'orders'])
             ->select([
                 'domains.id',
                 'domains.account_id',

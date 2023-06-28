@@ -47,6 +47,7 @@ const handleSubmission = () => {
             onSuccess: page => {
                 formItem.reset();
                 isEdit.value = false;
+                console.log(page.props)
             },
             onError: error => {
                 console.log(error)

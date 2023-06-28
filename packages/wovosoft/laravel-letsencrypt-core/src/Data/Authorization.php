@@ -2,13 +2,14 @@
 
 namespace Wovosoft\LaravelLetsencryptCore\Data;
 
+use Illuminate\Support\Carbon;
 use Wovosoft\LaravelLetsencryptCore\LaravelClient;
 use Wovosoft\LaravelLetsencryptCore\Helper;
 
 class Authorization extends BaseData
 {
     protected array $challenges = [];
-    protected \DateTime $expires;
+    protected Carbon $expires;
 
     public function __construct(
         protected readonly string $domain,
@@ -17,7 +18,7 @@ class Authorization extends BaseData
     )
     {
         if (is_string($expires)) {
-            $this->expires = (new \DateTime())->setTimestamp(strtotime($expires));
+            $this->expires = Carbon::parse(strtotime($expires));
         }
     }
 
@@ -42,9 +43,9 @@ class Authorization extends BaseData
 
     /**
      * Return the expiry of the authorization
-     * @return \DateTime
+     * @return Carbon
      */
-    public function getExpires(): \DateTime
+    public function getExpires(): Carbon
     {
         return $this->expires;
     }
@@ -121,13 +122,13 @@ class Authorization extends BaseData
     public function toArray(): array
     {
         return [
-            "domain"         => $this->domain,
-            "expires"        => $this->expires,
-            "challenges"     => collect($this->challenges)->map(fn(Challenge $challenge) => $challenge->toArray())->toArray(),
+            "domain" => $this->domain,
+            "expires" => $this->expires,
+            "challenges" => collect($this->challenges)->map(fn(Challenge $challenge) => $challenge->toArray())->toArray(),
             "http_challenge" => $this->getHttpChallenge()?->toArray(),
-            "dns_challenge"  => $this->getDnsChallenge()?->toArray(),
-            "file"           => $this->getFile()?->toArray(),
-            "txt_record"     => $this->getTxtRecord()?->toArray(),
+            "dns_challenge" => $this->getDnsChallenge()?->toArray(),
+            "file" => $this->getFile()?->toArray(),
+            "txt_record" => $this->getTxtRecord()?->toArray(),
         ];
     }
 }

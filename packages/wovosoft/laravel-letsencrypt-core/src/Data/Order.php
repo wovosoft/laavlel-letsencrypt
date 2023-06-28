@@ -2,11 +2,12 @@
 
 namespace Wovosoft\LaravelLetsencryptCore\Data;
 
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 
 class Order extends BaseData
 {
-    protected \DateTime $expiresAt;
+    protected Carbon $expiresAt;
 
     public function __construct(
         protected array  $domains,
@@ -22,7 +23,7 @@ class Order extends BaseData
         if (str_contains($expiresAt, '.')) {
             $expiresAt = substr($expiresAt, 0, strpos($expiresAt, '.')) . 'Z';
         }
-        $this->expiresAt = (new \DateTime())->setTimestamp(strtotime($expiresAt));
+        $this->expiresAt = Carbon::parse(strtotime($expiresAt));
     }
 
 
@@ -53,17 +54,15 @@ class Order extends BaseData
         return $this->status;
     }
 
-    /**
-     * Returns expires at
-     * @return \DateTime
-     */
-    public function getExpiresAt(): \DateTime
+
+    public function getExpiresAt(): Carbon
     {
         return $this->expiresAt;
     }
 
+
     /**
-     * Returs domains as identifiers
+     * Returns domains as identifiers
      * @return array
      */
     public function getIdentifiers(): array
@@ -80,7 +79,7 @@ class Order extends BaseData
         return $this->finalizeURL;
     }
 
-    public function getUrl()
+    public function getUrl(): string
     {
         return $this->url;
     }
@@ -97,13 +96,13 @@ class Order extends BaseData
     public function toArray(): array
     {
         return [
-            "domains" => $this->domains,
-            "url" => $this->url,
-            "status" => $this->status,
-            "expiresAt" => $this->expiresAt,
-            "identifiers" => $this->identifiers,
-            "authorizations" => $this->authorizations,
-            "finalizeURL" => $this->finalizeURL,
+            "domains" => $this->getDomains(),
+            "url" => $this->getUrl(),
+            "status" => $this->getStatus(),
+            "expiresAt" => $this->getExpiresAt(),
+            "identifiers" => $this->getIdentifiers(),
+            "authorizations" => $this->getAuthorizationURLs(),
+            "finalizeURL" => $this->getFinalizeURL(),
         ];
     }
 

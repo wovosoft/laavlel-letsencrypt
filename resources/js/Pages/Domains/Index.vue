@@ -1,6 +1,19 @@
 <script setup lang="ts">
 import {computed, PropType, ref} from "vue";
-import {Button, Container, DataTable, FormGroup, Input, Modal} from "@wovosoft/wovoui";
+import {
+    Button,
+    Container,
+    DataTable,
+    FormGroup,
+    Input,
+    Modal,
+    Spinner,
+    TBody,
+    Td,
+    Tr,
+    Table,
+    THead, Th, ButtonGroup
+} from "@wovosoft/wovoui";
 import {DatatableType} from "@/types";
 import ActionButtons from "@/Components/ActionButtons.vue";
 import BasicDatatable from "@/Components/Datatable/BasicDatatable.vue";
@@ -8,6 +21,7 @@ import {useForm} from "@inertiajs/vue3";
 import route from "ziggy-js";
 import {toDateTime} from "@/Composables/useHelpers";
 import SelectAccount from "@/Components/Selectors/SelectAccount.vue";
+import {Check, CheckCircle, SendDash, XCircle} from "@wovosoft/wovoui-icons";
 
 const props = defineProps({
     items: Object as PropType<DatatableType<Account>>,
@@ -64,6 +78,21 @@ const isShownVerificationModal = ref<boolean>(false);
 const showVerificationModal = () => {
     isShownVerificationModal.value = true;
 }
+
+const verificationMethods = useForm({});
+
+function getAuthorizationMethods(id: number) {
+    if (!verificationMethods.processing) {
+        verificationMethods.post(route('orders.get-authorizations', {order: id}), {
+            onSuccess: (page) => {
+                console.log(page.props)
+            },
+            onError: (errors) => {
+                console.log(errors)
+            }
+        })
+    }
+}
 </script>
 
 <template>
@@ -81,7 +110,7 @@ const showVerificationModal = () => {
                 <template #cell(action)="row">
                     <ActionButtons @click:view="showItem(row.item)" no-edit>
                         <template #prepend>
-                            <Button>
+                            <Button @click="showVerificationModal()">
                                 Verify
                             </Button>
                         </template>
@@ -97,13 +126,39 @@ const showVerificationModal = () => {
                close-btn-white
                size="lg"
                title="Domain Details">
-            <h2>
-                {{ currentItem.domain }}
-            </h2>
-            <div>
-                Account : <span class="text-muted">{{ currentItem?.account?.email }}</span><br/>
-                Created At : {{ currentItem?.created_at }}
-            </div>
+            <h4>
+                {{ currentItem?.domain }}
+                <CheckCircle class="ms-2 text-primary" v-if="currentItem?.is_ownership_verified"/>
+                <XCircle v-else class="ms-2 text-danger"/>
+            </h4>
+            <small class="text-muted">{{ currentItem?.created_at }}</small>
+
+
+            <Table bordered small hover striped class="mt-3">
+                <THead variant="dark">
+                <Tr>
+                    <Th>Date</Th>
+                    <Th>Expires At</Th>
+                    <Th>Action</Th>
+                </Tr>
+                </THead>
+                <TBody>
+                <Tr v-for="order in currentItem?.orders">
+                    <Td>{{ order?.created_at }}</Td>
+                    <Td>{{ order?.expires }}</Td>
+                    <Td>
+                        <ButtonGroup size="sm">
+                            <Button variant="primary" @click="getAuthorizationMethods(order.id)"
+                                    :disabled="verificationMethods.processing">
+                                <Spinner v-if="verificationMethods.processing" size="sm"/>
+                                Challenges
+                            </Button>
+                        </ButtonGroup>
+                    </Td>
+                </Tr>
+                </TBody>
+            </Table>
+            <pre>{{ currentItem }}</pre>
         </Modal>
         <Modal v-model="isEdit"
                shrink
@@ -133,10 +188,22 @@ const showVerificationModal = () => {
                 <!--                <pre>{{ formItem }}</pre>-->
             </form>
         </Modal>
-        <Modal v-model="isShownVerificationModal"
-               title="Verify Domain"
-               shrink>
-
+        <Modal
+            no-close-on-backdrop
+            no-close-on-esc
+            static
+            ok-title="Submit"
+            v-model="isShownVerificationModal"
+            title="Verify Domain"
+            size="xl"
+            header-variant="dark"
+            close-btn-white
+            shrink>
+            <h3>1. Get Verification Methods</h3>
+            <Button variant="primary" @click="getAuthorizationMethods" :disabled="verificationMethods.processing">
+                <Spinner size="sm" v-if="verificationMethods.processing"/>
+                Request Let's Encrypt
+            </Button>
         </Modal>
     </Container>
 </template>

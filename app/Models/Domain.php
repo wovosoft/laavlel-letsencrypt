@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
+use Wovosoft\LaravelLetsencryptCore\LaravelClient;
 
 /**
  * App\Models\Domain
@@ -38,9 +39,24 @@ class Domain extends Model
 {
     use HasFactory;
 
+    protected $with = [
+        "account"
+    ];
+
     protected $casts = [
         "is_ownership_verified" => "boolean"
     ];
+
+    /**
+     * @throws \Exception
+     */
+    public function leClient(): LaravelClient
+    {
+        return new LaravelClient(
+            mode: config("lets_encrypt.mode"),
+            username: $this->account?->email
+        );
+    }
 
     public function account(): BelongsTo
     {
