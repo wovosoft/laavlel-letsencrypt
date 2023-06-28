@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\Messages;
 use App\Http\Requests\AccountStoreRequest;
 use App\Models\Account;
+use App\Models\Domain;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -46,30 +48,29 @@ class AccountController extends Controller
         $account->account_id = $leAccount->getId();
         $account->is_valid = $leAccount->isValid();
         $account->saveOrFail();
-        return back()->with('notification', [
-            "message" => "Successfully Done",
-            "variant" => "primary",
-            "item" => $account,
-            "le_account" => $leAccount->toArray()
-        ]);
+        return success()
+            ->with(...Messages::withData([
+                "item" => $account,
+                "le_account" => $leAccount->toArray()
+            ]));
 
     }
 
+    /**
+     * @throws \Throwable
+     */
     public function store(AccountStoreRequest $request)
     {
-        return DB::transaction(function () use ($request) {
+        return transaction(function () use ($request) {
             $account = new Account();
             $account->forceFill($request->validated());
             $request->user()->accounts()->save(
                 $account
             );
 
-
-            return back()->with('notification', [
-                'message' => "Successfully Done",
-                'variant' => 'primary',
-                'item' => $account
-            ]);
+            return [
+                "account" => $account
+            ];
         });
     }
 
@@ -88,6 +89,21 @@ class AccountController extends Controller
             })
             ->limit(30)
             ->get();
+    }
+
+    /**
+     * @throws \Exception
+     */
+    public function delete(Account $account)
+    {
+        if ($account->user_id !== auth()->id()) {
+            throw new \Exception("Account doesn't belongs to You");
+        }
+
+        return DB::transaction(function () use ($account) {
+            $account->deleteOrFail();
+            return success();
+        });
     }
 
     public function index(Request $request): Response

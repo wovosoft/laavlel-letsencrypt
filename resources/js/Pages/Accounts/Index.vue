@@ -62,7 +62,7 @@ const veryForm = useForm({
     account_id: null
 });
 
-function verifyAccount(account_id: number | string) {
+function verifyAccount(account_id) {
     veryForm.account_id = account_id;
     veryForm.post(route('accounts.verify', {account: Number(account_id)}), {
         onSuccess: (page) => {

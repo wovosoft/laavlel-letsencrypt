@@ -22,6 +22,7 @@ import route from "ziggy-js";
 import {toDateTime} from "@/Composables/useHelpers";
 import SelectAccount from "@/Components/Selectors/SelectAccount.vue";
 import {Check, CheckCircle, SendDash, XCircle} from "@wovosoft/wovoui-icons";
+import useAxiosForm from "@/Composables/useAxiosForm";
 
 const props = defineProps({
     items: Object as PropType<DatatableType<Account>>,
@@ -79,18 +80,16 @@ const showVerificationModal = () => {
     isShownVerificationModal.value = true;
 }
 
-const verificationMethods = useForm({});
+const verificationMethods = useAxiosForm({});
+
 
 function getAuthorizationMethods(id: number) {
     if (!verificationMethods.processing) {
-        verificationMethods.post(route('orders.get-authorizations', {order: id}), {
-            onSuccess: (page) => {
-                console.log(page.props)
-            },
-            onError: (errors) => {
-                console.log(errors)
-            }
-        })
+        verificationMethods
+            .post(route('orders.get-authorizations', {order: id}))
+            .then(res => {
+                console.log(res)
+            })
     }
 }
 </script>
@@ -109,11 +108,7 @@ function getAuthorizationMethods(id: number) {
                 :fields="fields">
                 <template #cell(action)="row">
                     <ActionButtons @click:view="showItem(row.item)" no-edit>
-                        <template #prepend>
-                            <Button @click="showVerificationModal()">
-                                Verify
-                            </Button>
-                        </template>
+
                     </ActionButtons>
                 </template>
             </DataTable>
@@ -148,8 +143,7 @@ function getAuthorizationMethods(id: number) {
                     <Td>{{ order?.expires }}</Td>
                     <Td>
                         <ButtonGroup size="sm">
-                            <Button variant="primary" @click="getAuthorizationMethods(order.id)"
-                                    :disabled="verificationMethods.processing">
+                            <Button variant="primary" @click="getAuthorizationMethods(order.id)">
                                 <Spinner v-if="verificationMethods.processing" size="sm"/>
                                 Challenges
                             </Button>
@@ -187,23 +181,6 @@ function getAuthorizationMethods(id: number) {
                 </FormGroup>
                 <!--                <pre>{{ formItem }}</pre>-->
             </form>
-        </Modal>
-        <Modal
-            no-close-on-backdrop
-            no-close-on-esc
-            static
-            ok-title="Submit"
-            v-model="isShownVerificationModal"
-            title="Verify Domain"
-            size="xl"
-            header-variant="dark"
-            close-btn-white
-            shrink>
-            <h3>1. Get Verification Methods</h3>
-            <Button variant="primary" @click="getAuthorizationMethods" :disabled="verificationMethods.processing">
-                <Spinner size="sm" v-if="verificationMethods.processing"/>
-                Request Let's Encrypt
-            </Button>
         </Modal>
     </Container>
 </template>
