@@ -1,9 +1,7 @@
 <?php
 
-namespace App\Console\Commands;
+namespace Wovosoft\TypescriptTransformer\Commands;
 
-use App\Models\Account;
-use App\Models\User;
 use Doctrine\DBAL\Exception;
 use Illuminate\Console\Command;
 use Wovosoft\TypescriptTransformer\TypescriptTransformer;
@@ -15,7 +13,7 @@ class TypescriptModelTransformer extends Command
      *
      * @var string
      */
-    protected $signature = 'app:typescript-model-transformer';
+    protected $signature = 'typescript:transform-models';
 
     /**
      * The console command description.
@@ -27,15 +25,15 @@ class TypescriptModelTransformer extends Command
     /**
      * Execute the console command.
      * @throws Exception
+     * @throws \ReflectionException
+     * @throws \Exception
      */
     public function handle(): void
     {
-        $transformer = new TypescriptTransformer([
-            User::class,
-            Account::class
-        ]);
+        $transformer = new TypescriptTransformer(
+            outputPath: resource_path("js/types/models.d.ts"),
+            sourceDir: app_path("Models")
+        );
         $transformer->run();
-
-        $model = new User();
     }
 }

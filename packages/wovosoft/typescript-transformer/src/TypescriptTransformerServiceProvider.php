@@ -4,6 +4,7 @@ namespace Wovosoft\TypescriptTransformer;
 
 use App\Models\User;
 use Illuminate\Support\ServiceProvider;
+use Wovosoft\TypescriptTransformer\Commands\TypescriptModelTransformer;
 
 class TypescriptTransformerServiceProvider extends ServiceProvider
 {
@@ -32,14 +33,14 @@ class TypescriptTransformerServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->mergeConfigFrom(__DIR__.'/../config/typescript-transformer.php', 'typescript-transformer');
+        $this->mergeConfigFrom(__DIR__ . '/../config/typescript-transformer.php', 'typescript-transformer');
 
         // Register the service the package provides.
-        $this->app->singleton('typescript-transformer', function ($app) {
-            return new TypescriptTransformer(models:[
-                User::class
-            ]);
-        });
+//        $this->app->singleton('typescript-transformer', function ($app) {
+//            return new TypescriptTransformer(models:[
+//                User::class
+//            ]);
+//        });
     }
 
     /**
@@ -61,7 +62,7 @@ class TypescriptTransformerServiceProvider extends ServiceProvider
     {
         // Publishing the configuration file.
         $this->publishes([
-            __DIR__.'/../config/typescript-transformer.php' => config_path('typescript-transformer.php'),
+            __DIR__ . '/../config/typescript-transformer.php' => config_path('typescript-transformer.php'),
         ], 'typescript-transformer.config');
 
         // Publishing the views.
@@ -80,6 +81,8 @@ class TypescriptTransformerServiceProvider extends ServiceProvider
         ], 'typescript-transformer.views');*/
 
         // Registering package commands.
-        // $this->commands([]);
+        $this->commands([
+            TypescriptModelTransformer::class
+        ]);
     }
 }

@@ -43,7 +43,7 @@ Route::get('/t', function () {
     $transformer = new Wovosoft\TypescriptTransformer\TypescriptTransformer();
     $relations = $transformer->getModelRelations(Account::first());
 
-//    $relations->dd();
+    $relations->dd();
 
 });
 
