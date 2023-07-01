@@ -2,27 +2,27 @@
 
 namespace App\Models;
 
+use App\Enums\Status;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Wovosoft\LaravelLetsencryptCore\LaravelClient;
-use Wovosoft\LaravelLetsencryptCore\Ssl\ClientModes;
 
 /**
  * App\Models\Account
  *
- * @property int $id
- * @property int $user_id
- * @property string|null $account_id
- * @property string $email
- * @property int $is_valid
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property int                                                                         $id
+ * @property int                                                                         $user_id
+ * @property string|null                                                                 $account_id
+ * @property string                                                                      $email
+ * @property int                                                                         $is_valid
+ * @property \Illuminate\Support\Carbon|null                                             $created_at
+ * @property \Illuminate\Support\Carbon|null                                             $updated_at
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Certificate> $certificates
- * @property-read int|null $certificates_count
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Domain> $domains
- * @property-read int|null $domains_count
+ * @property-read int|null                                                               $certificates_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Domain>      $domains
+ * @property-read int|null                                                               $domains_count
  * @method static \Illuminate\Database\Eloquent\Builder|Account newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Account newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Account query()
@@ -38,6 +38,11 @@ use Wovosoft\LaravelLetsencryptCore\Ssl\ClientModes;
 class Account extends Model
 {
     use HasFactory;
+
+    protected $casts = [
+        "created_at" => "datetime",
+        "is_valid"   => Status::class //remove It's for testing
+    ];
 
     /**
      * @throws \Exception

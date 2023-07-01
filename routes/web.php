@@ -15,10 +15,10 @@ use Wovosoft\LaravelLetsencryptCore\Ssl\ClientModes;
 
 Route::get('/', function () {
     return Inertia::render('Welcome', [
-        'canLogin' => Route::has('login'),
-        'canRegister' => Route::has('register'),
+        'canLogin'       => Route::has('login'),
+        'canRegister'    => Route::has('register'),
         'laravelVersion' => Application::VERSION,
-        'phpVersion' => PHP_VERSION,
+        'phpVersion'     => PHP_VERSION,
     ]);
 });
 
@@ -40,16 +40,10 @@ Route::middleware([
 GuestCertificateController::routes();
 
 Route::get('/t', function () {
-    $account = Account::first();
+    $transformer = new Wovosoft\TypescriptTransformer\TypescriptTransformer();
+    $relations = $transformer->getModelRelations(Account::first());
 
-    $lc = new LaravelClient(
-        mode: ClientModes::Staging,
-        username: $account->email
-    );
-
-    $domain = $account->domains()->first()->pluck('domain')->toArray();
-    $order = $lc->createOrder($domain);
-    dd($order);
+//    $relations->dd();
 
 });
 

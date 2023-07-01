@@ -17,7 +17,7 @@ use Wovosoft\LaravelLetsencryptCore\Data\Authorization;
  * @property int $id
  * @property int $domain_id
  * @property string|null $order_id
- * @property string|null $expires
+ * @property \Illuminate\Support\Carbon|null $expires
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Account|null $account

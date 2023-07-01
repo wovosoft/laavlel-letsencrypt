@@ -39,6 +39,7 @@ class Domain extends Model
 {
     use HasFactory;
 
+    private ?LaravelClient $laravelClient = null;
     protected $with = [
         "account"
     ];
@@ -50,8 +51,11 @@ class Domain extends Model
     /**
      * @throws \Exception
      */
-    public function leClient(): LaravelClient
+    public function leClient(bool $refresh = false): LaravelClient
     {
+        if ($this->laravelClient && !$refresh) {
+            return $this->laravelClient;
+        }
         return new LaravelClient(
             mode: config("lets_encrypt.mode"),
             username: $this->account?->email

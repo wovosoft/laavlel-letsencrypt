@@ -1,0 +1,34 @@
+{
+    "name": "wovosoft/typescript-transformer",
+    "description": ":package_description",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Author Name",
+            "email": "author@email.com",
+            "homepage": "http://author.com"
+        }
+    ],
+    "homepage": "https://github.com/wovosoft/typescript-transformer",
+    "keywords": ["Laravel", "TypescriptTransformer"],
+    "autoload": {
+        "psr-4": {
+            "Wovosoft\\TypescriptTransformer\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Wovosoft\\TypescriptTransformer\\Tests\\": "tests"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Wovosoft\\TypescriptTransformer\\TypescriptTransformerServiceProvider"
+            ],
+            "aliases": {
+                "TypescriptTransformer": "Wovosoft\\TypescriptTransformer\\Facades\\TypescriptTransformer"
+            }
+        }
+    }
+}

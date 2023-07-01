@@ -1,3 +1,94 @@
+<template>
+    <Container fluid class="pt-3">
+        <BasicDatatable :items="items" :queries="queries" :fields="fields" @click:new="editItem(null)">
+            <DataTable
+                class="mb-0"
+                head-class="table-dark"
+                small
+                bordered
+                hover
+                striped
+                :items="items?.data"
+                :fields="fields">
+                <template #cell(action)="row">
+                    <ActionButtons @click:view="showItem(row.item)" no-edit>
+
+                    </ActionButtons>
+                </template>
+            </DataTable>
+        </BasicDatatable>
+        <Modal v-model="isView"
+               shrink
+               lazy
+               @hidden="currentItem=null"
+               header-variant="dark"
+               close-btn-white
+               size="lg"
+               title="Domain Details">
+            <h4>
+                {{ currentItem?.domain }}
+                <CheckCircle class="ms-2 text-primary" v-if="currentItem?.is_ownership_verified"/>
+                <XCircle v-else class="ms-2 text-danger"/>
+            </h4>
+            <small class="text-muted">{{ currentItem?.created_at }}</small>
+
+
+            <Table bordered small hover striped class="mt-3">
+                <THead variant="dark">
+                <Tr>
+                    <Th>Date</Th>
+                    <Th>Expires At</Th>
+                    <Th>Action</Th>
+                </Tr>
+                </THead>
+                <TBody>
+                <Tr v-for="order in currentItem?.orders">
+                    <Td>{{ order?.created_at }}</Td>
+                    <Td>{{ order?.expires }}</Td>
+                    <Td>
+                        <ButtonGroup size="sm">
+                            <Button variant="primary" @click="getAuthorizationMethods(order.id)">
+                                <Spinner v-if="verificationMethods.processing" size="sm"/>
+                                Challenges
+                            </Button>
+                        </ButtonGroup>
+                    </Td>
+                </Tr>
+                </TBody>
+            </Table>
+            <pre>{{ currentItem }}</pre>
+        </Modal>
+        <Modal v-model="isEdit"
+               shrink
+               lazy
+               @hidden="formItem.reset()"
+               header-variant="dark"
+               close-btn-white
+               size="lg"
+               ok-title="Submit"
+               no-close-on-esc
+               no-close-on-backdrop
+               :loading="formItem.processing"
+               @ok.prevent="handleSubmission"
+               title="Domain Details">
+            <form ref="theForm" @submit.prevent="handleSubmission">
+                <FormGroup label="Account No. *">
+                    <SelectAccount preload v-model="account_id"/>
+                </FormGroup>
+                <FormGroup label="Domain Name *">
+                    <Input size="sm"
+                           required
+                           v-model="formItem.domain"
+                           placeholder="Domain Name"
+                           name="domain"
+                    />
+                </FormGroup>
+                <!--                <pre>{{ formItem }}</pre>-->
+            </form>
+        </Modal>
+    </Container>
+</template>
+
 <script setup lang="ts">
 import {computed, PropType, ref} from "vue";
 import {
@@ -93,94 +184,3 @@ function getAuthorizationMethods(id: number) {
     }
 }
 </script>
-
-<template>
-    <Container fluid class="pt-3">
-        <BasicDatatable :items="items" :queries="queries" :fields="fields" @click:new="editItem(null)">
-            <DataTable
-                class="mb-0"
-                head-class="table-dark"
-                small
-                bordered
-                hover
-                striped
-                :items="items?.data"
-                :fields="fields">
-                <template #cell(action)="row">
-                    <ActionButtons @click:view="showItem(row.item)" no-edit>
-
-                    </ActionButtons>
-                </template>
-            </DataTable>
-        </BasicDatatable>
-        <Modal v-model="isView"
-               shrink
-               lazy
-               @hidden="currentItem=null"
-               header-variant="dark"
-               close-btn-white
-               size="lg"
-               title="Domain Details">
-            <h4>
-                {{ currentItem?.domain }}
-                <CheckCircle class="ms-2 text-primary" v-if="currentItem?.is_ownership_verified"/>
-                <XCircle v-else class="ms-2 text-danger"/>
-            </h4>
-            <small class="text-muted">{{ currentItem?.created_at }}</small>
-
-
-            <Table bordered small hover striped class="mt-3">
-                <THead variant="dark">
-                <Tr>
-                    <Th>Date</Th>
-                    <Th>Expires At</Th>
-                    <Th>Action</Th>
-                </Tr>
-                </THead>
-                <TBody>
-                <Tr v-for="order in currentItem?.orders">
-                    <Td>{{ order?.created_at }}</Td>
-                    <Td>{{ order?.expires }}</Td>
-                    <Td>
-                        <ButtonGroup size="sm">
-                            <Button variant="primary" @click="getAuthorizationMethods(order.id)">
-                                <Spinner v-if="verificationMethods.processing" size="sm"/>
-                                Challenges
-                            </Button>
-                        </ButtonGroup>
-                    </Td>
-                </Tr>
-                </TBody>
-            </Table>
-            <pre>{{ currentItem }}</pre>
-        </Modal>
-        <Modal v-model="isEdit"
-               shrink
-               lazy
-               @hidden="formItem.reset()"
-               header-variant="dark"
-               close-btn-white
-               size="lg"
-               ok-title="Submit"
-               no-close-on-esc
-               no-close-on-backdrop
-               :loading="formItem.processing"
-               @ok.prevent="handleSubmission"
-               title="Domain Details">
-            <form ref="theForm" @submit.prevent="handleSubmission">
-                <FormGroup label="Account No. *">
-                    <SelectAccount preload v-model="account_id"/>
-                </FormGroup>
-                <FormGroup label="Domain Name *">
-                    <Input size="sm"
-                           required
-                           v-model="formItem.domain"
-                           placeholder="Domain Name"
-                           name="domain"
-                    />
-                </FormGroup>
-                <!--                <pre>{{ formItem }}</pre>-->
-            </form>
-        </Modal>
-    </Container>
-</template>
