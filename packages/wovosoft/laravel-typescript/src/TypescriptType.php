@@ -17,11 +17,8 @@ class TypescriptType
 
     public function generate(): string
     {
-        $contents = "\texport interface $this->shortName {\n";
-        $this->types?->each(function (string $value, string $key) use (&$contents) {
-            $contents .= "\t\t$key: $value;\n";
-        });
-        $contents .= "\t}\n\n";
-        return $contents;
+        return "\texport interface $this->shortName {\n"
+            . $this->types?->implode(fn(string $value, string $key) => "\t\t$key: $value;", "\n")
+            . "\n\t}\n\n";
     }
 }

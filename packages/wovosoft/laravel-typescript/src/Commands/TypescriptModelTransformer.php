@@ -19,7 +19,7 @@ class TypescriptModelTransformer extends Command
      *
      * @var string
      */
-    protected $description = 'Command description';
+    protected $description = 'Model to Typescript Transfer Command';
 
     /**
      * Execute the console command.
@@ -28,8 +28,8 @@ class TypescriptModelTransformer extends Command
     public function handle(): void
     {
         $transformer = new LaravelTypescript(
-            outputPath: resource_path("js/types/models.d.ts"),
-            sourceDir: app_path("Models")
+            outputPath: config("laravel-typescript.output_path"),
+            sourceDir: config("laravel-typescript.source_dir")
         );
         $transformer->run();
     }

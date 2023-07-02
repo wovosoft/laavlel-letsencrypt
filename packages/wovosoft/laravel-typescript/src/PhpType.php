@@ -14,7 +14,7 @@ enum PhpType: string
     case BOOLEAN = "boolean";
     case NULL    = "null";
 
-    public static function toTypescript(string|PhpType $type): string
+    public static function toTypescript(string|PhpType|null $type = null): string
     {
         if (is_string($type)) {
             $type = self::tryFrom($type);
@@ -26,7 +26,7 @@ enum PhpType: string
             self::STRING => "string",
             self::NULL => "null",
             self::BOOLEAN, self::BOOL => "boolean",
-            default => "any"
+            default => "unknown"
         };
     }
 }

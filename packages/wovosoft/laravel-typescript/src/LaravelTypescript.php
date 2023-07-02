@@ -2,10 +2,9 @@
 
 namespace Wovosoft\LaravelTypescript;
 
-
 use Doctrine\DBAL\Exception;
 use Doctrine\DBAL\Schema\Column;
-use File;
+use Illuminate\Support\Facades\File;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -24,12 +23,10 @@ use ReflectionMethod;
 
 class LaravelTypescript
 {
-
     /**
      * @var Collection<int,class-string<Model>>
      */
     private Collection $modelClasses;
-
 
     public function __construct(
         public ?string $outputPath = null,
@@ -42,12 +39,11 @@ class LaravelTypescript
         if (!$this->sourceDir) {
             $this->sourceDir = app_path("Models");
         }
-        $this->modelClasses = (new ModelFinder())->getModelsIn(app_path("Models"));
+        $this->modelClasses = (new ModelFinder)->getModelsIn($this->sourceDir);
     }
 
     public function run(): void
     {
-
         File::ensureDirectoryExists(dirname($this->outputPath));
         File::put($this->outputPath, "");
 
@@ -62,7 +58,6 @@ class LaravelTypescript
             });
     }
 
-
     /**
      * @return Collection<int,TypescriptType>
      */
@@ -70,26 +65,14 @@ class LaravelTypescript
     {
         return $this->modelClasses->map(function (string $modelClass) {
             $reflection = (new \ReflectionClass($modelClass));
-            $namespace = $reflection->getNamespaceName();
-            $contents = collect([]);
 
-            $fields = $this->transform($modelClass);
-            $fields->each(function ($value, $key) use (&$contents) {
-                $contents->put($key, $value);
-            });
-
-            $this->getModelRelations($modelClass)
-                ->each(function (string $value, string $key) use (&$contents) {
-                    $contents->put($key, $value);
-                });
-
-            $this->getCustomAttributeTypes($modelClass)
-                ->each(function (string $value, string $key) use (&$contents) {
-                    $contents->put($key, $value);
-                });
+            $contents = $this->getModelFields($modelClass)
+                ->merge($this->getModelRelations($modelClass))
+                ->merge($this->getCustomAttributeTypes($modelClass))
+                ->mapWithKeys(fn($value, $key) => [$key => $value]);
 
             return new TypescriptType(
-                namespace: $namespace,
+                namespace: $reflection->getNamespaceName(),
                 model: $modelClass,
                 shortName: $reflection->getShortName(),
                 types: $contents
@@ -97,48 +80,34 @@ class LaravelTypescript
         });
     }
 
-    public function getType(Model $model, Column $column): string
-    {
-        $casts = $model->getCasts();
-
-        if (in_array($column->getName(), array_keys($casts))) {
-            /** @var class-string<\BackedEnum>|class-string<\UnitEnum> $type */
-            $type = $casts[$column->getName()];
-
-            if (enum_exists($type)) {
-                return collect($type::cases())->map(fn($option) => "\"$option->value\"")->implode(' | ');
-            }
-
-            return DatabaseType::toTypescript(Casts::type($type));
-        }
-
-        return DatabaseType::toTypescript($column->getType());
-    }
 
     /**
      * @param class-string<Model> $modelClass
      * @return Collection<string,array>
      * @throws Exception
      */
-    public function transform(string $modelClass): Collection
+    public function getModelFields(string $modelClass): Collection
     {
         $model = new $modelClass();
+        $columns = $model->getConnection()
+            ->getDoctrineConnection()
+            ->createSchemaManager()
+            ->listTableColumns($model->getTable());
 
-        return collect(
-            $model->getConnection()
-                ->getDoctrineConnection()
-                ->createSchemaManager()
-                ->listTableColumns($model->getTable())
-        )->mapWithKeys(function (Column $column) use ($model) {
-            return [
-                $column->getName() => $this->getType(
-                    model: $model,
-                    column: $column
-                )
-            ];
-        });
+        /**
+         * Model fields name should be exact like column name
+         */
+        return collect($columns)->mapWithKeys(fn(Column $column) => [
+            $column->getName() => $this->toTypescript(item: $model, column: $column)
+        ]);
     }
 
+    private function isRelation(ReflectionMethod $method): bool
+    {
+        return $method->hasReturnType()
+            && $method->getReturnType() instanceof \ReflectionNamedType
+            && is_subclass_of($method->getReturnType()->getName(), Relation::class);
+    }
 
     /**
      * @param class-string<Model>|Model $model
@@ -150,35 +119,41 @@ class LaravelTypescript
             $model = new $model();
         }
 
-        $reflection = new \ReflectionClass($model);
-
-        return collect($reflection->getMethods())
-            ->filter(function (ReflectionMethod $method) {
-                $returnType = $method->getReturnType();
-                return $method->hasReturnType() && $returnType instanceof \ReflectionNamedType && is_subclass_of($returnType->getName(), Relation::class);
-            })->mapWithKeys(function (ReflectionMethod $reflectionMethod) use ($model) {
-                return [
-                    str($reflectionMethod->getName())->snake()->value() => $this->getRelatedClassType($model->{$reflectionMethod->getName()}())
-                ];
-            });
+        return collect((new \ReflectionClass($model))->getMethods())
+            ->filter(fn(ReflectionMethod $method) => $this->isRelation($method))
+            ->mapWithKeys(fn(ReflectionMethod $reflectionMethod) => [
+                str($reflectionMethod->getName())->snake()->value() => $this->getRelatedModelsType($model->{$reflectionMethod->getName()}())
+            ]);
     }
 
-    public function getRelatedClassType(Relation $relation): string
+    private function getRelatedModelsType(Relation $relation): string
     {
         $shorName = (new \ReflectionClass($relation->getRelated()))->getShortName();
 
         return match (get_class($relation)) {
-            HasOne::class, HasOneThrough::class, BelongsTo::class, MorphOne::class => $shorName,
+            HasOne::class, HasOneThrough::class, BelongsTo::class, MorphOne::class => "{$shorName} | null",
             HasMany::class, HasManyThrough::class,
-            BelongsToMany::class, MorphMany::class, MorphToMany::class => "{$shorName}[]",
-            MorphOneOrMany::class => "{$shorName}|{$shorName}[]",
+            BelongsToMany::class, MorphMany::class, MorphToMany::class => "{$shorName}[] | null",
+            MorphOneOrMany::class => "{$shorName} | {$shorName}[] | null",
             default => "any"
         };
 
         //MorphPivot::class=>,
     }
 
+    private function isMethodIsModelAttribute(ReflectionMethod $reflectionMethod): bool
+    {
+        $methodName = str($reflectionMethod->getName());
+        return (
+                $methodName->startsWith("get")
+                && $methodName->endsWith("Attribute")
+                && $methodName->value() !== "getAttribute"
+            ) || ($reflectionMethod->getReturnType()?->getName() === Attribute::class);
+    }
+
     /**
+     * @description Attributes which returns Illuminate\Database\Eloquent\Casts\Attribute, that means new attribute format,
+     * the callback of get should be explicitly defined. Otherwise, type will be unknown
      * @throws \ReflectionException
      */
     public function getCustomAttributeTypes(string|Model $model): Collection
@@ -187,45 +162,53 @@ class LaravelTypescript
             $model = new $model();
         }
 
-        $reflection = new \ReflectionClass($model);
+        return collect((new \ReflectionClass($model))->getMethods())
+            ->filter(fn(ReflectionMethod $reflectionMethod) => $this->isMethodIsModelAttribute($reflectionMethod))
+            ->mapWithKeys(function (ReflectionMethod $reflectionMethod) use ($model) {
+                $methodName = str($reflectionMethod->getName());
+                if ($methodName->startsWith("get") && $methodName->endsWith("Attribute")) {
+                    return [
+                        $methodName
+                            ->after('get')
+                            ->beforeLast('Attribute')
+                            ->snake()
+                            ->value() => $this->toTypescript($reflectionMethod->getReturnType())
+                    ];
+                }
 
-        return collect($reflection->getMethods())->filter(function (ReflectionMethod $reflectionMethod) {
-            $methodName = str($reflectionMethod->getName());
-            return (
-                    $methodName->startsWith("get")
-                    && $methodName->endsWith("Attribute")
-                    && $reflectionMethod->getName() !== "getAttribute"
-                ) || ($reflectionMethod->getReturnType()?->getName() === Attribute::class);
-        })->mapWithKeys(function (ReflectionMethod $reflectionMethod) use ($model) {
-            $methodName = str($reflectionMethod->getName());
-            if ($methodName->startsWith("get") && $methodName->endsWith("Attribute")) {
                 return [
-                    $methodName
-                        ->after('get')
-                        ->beforeLast('Attribute')
-                        ->snake()
-                        ->value() => $this->toTypescript($reflectionMethod->getReturnType())
+                    str($reflectionMethod->getName())->snake()->value() => $this->toTypescript(
+                        (new \ReflectionFunction($model->{$reflectionMethod->getName()}()->get))->getReturnType()
+                    )
                 ];
-            }
-
-            return [
-                str($reflectionMethod->getName())->snake()->value() => $this->toTypescript(
-                    (new \ReflectionFunction($model->{$reflectionMethod->getName()}()->get))->getReturnType()
-                )
-            ];
-        });
+            });
     }
 
-    private function toTypescript(\ReflectionUnionType|\ReflectionNamedType|null $type = null): string
+    private function toTypescript(\ReflectionUnionType|\ReflectionNamedType|Model|null $item = null, Column|null $column = null): string
     {
-        if (is_null($type)) {
-            return "null";
+        if ($item instanceof Model) {
+            $casts = $item->getCasts();
+
+            if (in_array($column->getName(), array_keys($casts))) {
+                /** @var class-string<\BackedEnum>|class-string<\UnitEnum> $castType */
+                $castType = $casts[$column->getName()];
+
+                if (enum_exists($castType)) {
+                    return EnumType::toTypescript($castType);
+                }
+
+                return DatabaseType::toTypescript(Casts::type($castType));
+            }
+
+            return DatabaseType::toTypescript($column->getType());
         }
-        if ($type instanceof \ReflectionUnionType) {
-            return collect($type->getTypes())
+
+
+        if ($item instanceof \ReflectionUnionType) {
+            return collect($item->getTypes())
                 ->map(fn(\ReflectionNamedType $namedType) => PhpType::toTypescript($namedType->getName()))
-                ->implode("|");
+                ->implode(" | ");
         }
-        return PhpType::toTypescript($type->getName());
+        return PhpType::toTypescript($item?->getName());
     }
 }
