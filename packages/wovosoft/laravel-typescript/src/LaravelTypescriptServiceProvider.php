@@ -1,12 +1,11 @@
 <?php
 
-namespace Wovosoft\TypescriptTransformer;
+namespace Wovosoft\LaravelTypescript;
 
-use App\Models\User;
 use Illuminate\Support\ServiceProvider;
-use Wovosoft\TypescriptTransformer\Commands\TypescriptModelTransformer;
+use Wovosoft\LaravelTypescript\Commands\TypescriptModelTransformer;
 
-class TypescriptTransformerServiceProvider extends ServiceProvider
+class LaravelTypescriptServiceProvider extends ServiceProvider
 {
     /**
      * Perform post-registration booting of services.
@@ -33,11 +32,11 @@ class TypescriptTransformerServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->mergeConfigFrom(__DIR__ . '/../config/typescript-transformer.php', 'typescript-transformer');
+        $this->mergeConfigFrom(__DIR__ . '/../config/laravel-typescript.php', 'laravel-typescript');
 
         // Register the service the package provides.
-//        $this->app->singleton('typescript-transformer', function ($app) {
-//            return new TypescriptTransformer(models:[
+//        $this->app->singleton('laravel-typescript', function ($app) {
+//            return new LaravelTypescript(models:[
 //                User::class
 //            ]);
 //        });
@@ -50,7 +49,7 @@ class TypescriptTransformerServiceProvider extends ServiceProvider
      */
     public function provides(): array
     {
-        return ['typescript-transformer'];
+        return ['laravel-typescript'];
     }
 
     /**
@@ -62,23 +61,23 @@ class TypescriptTransformerServiceProvider extends ServiceProvider
     {
         // Publishing the configuration file.
         $this->publishes([
-            __DIR__ . '/../config/typescript-transformer.php' => config_path('typescript-transformer.php'),
-        ], 'typescript-transformer.config');
+            __DIR__ . '/../config/laravel-typescript.php' => config_path('laravel-typescript.php'),
+        ], 'laravel-typescript.config');
 
         // Publishing the views.
         /*$this->publishes([
             __DIR__.'/../resources/views' => base_path('resources/views/vendor/wovosoft'),
-        ], 'typescript-transformer.views');*/
+        ], 'laravel-typescript.views');*/
 
         // Publishing assets.
         /*$this->publishes([
             __DIR__.'/../resources/assets' => public_path('vendor/wovosoft'),
-        ], 'typescript-transformer.views');*/
+        ], 'laravel-typescript.views');*/
 
         // Publishing the translation files.
         /*$this->publishes([
             __DIR__.'/../resources/lang' => resource_path('lang/vendor/wovosoft'),
-        ], 'typescript-transformer.views');*/
+        ], 'laravel-typescript.views');*/
 
         // Registering package commands.
         $this->commands([

@@ -12,7 +12,7 @@ This is where your description should go. Take a look at [contributing.md](contr
 Via Composer
 
 ``` bash
-$ composer require wovosoft/typescript-transformer
+$ composer require wovosoft/laravel-typescript
 ```
 
 ## Usage
@@ -44,14 +44,14 @@ If you discover any security related issues, please email author@email.com inste
 
 MIT. Please see the [license file](license.md) for more information.
 
-[ico-version]: https://img.shields.io/packagist/v/wovosoft/typescript-transformer.svg?style=flat-square
-[ico-downloads]: https://img.shields.io/packagist/dt/wovosoft/typescript-transformer.svg?style=flat-square
-[ico-travis]: https://img.shields.io/travis/wovosoft/typescript-transformer/master.svg?style=flat-square
+[ico-version]: https://img.shields.io/packagist/v/wovosoft/laravel-typescript.svg?style=flat-square
+[ico-downloads]: https://img.shields.io/packagist/dt/wovosoft/laravel-typescript.svg?style=flat-square
+[ico-travis]: https://img.shields.io/travis/wovosoft/laravel-typescript/master.svg?style=flat-square
 [ico-styleci]: https://styleci.io/repos/12345678/shield
 
-[link-packagist]: https://packagist.org/packages/wovosoft/typescript-transformer
-[link-downloads]: https://packagist.org/packages/wovosoft/typescript-transformer
-[link-travis]: https://travis-ci.org/wovosoft/typescript-transformer
+[link-packagist]: https://packagist.org/packages/wovosoft/laravel-typescript
+[link-downloads]: https://packagist.org/packages/wovosoft/laravel-typescript
+[link-travis]: https://travis-ci.org/wovosoft/laravel-typescript
 [link-styleci]: https://styleci.io/repos/12345678
 [link-author]: https://github.com/wovosoft
 [link-contributors]: ../../contributors

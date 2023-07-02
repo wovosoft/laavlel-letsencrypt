@@ -1,12 +1,11 @@
 <?php
 
-namespace Wovosoft\TypescriptTransformer;
+namespace Wovosoft\LaravelTypescript;
 
 
-use App\Models\Account;
-use App\Models\User;
 use Doctrine\DBAL\Exception;
 use Doctrine\DBAL\Schema\Column;
+use File;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -23,7 +22,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use ReflectionMethod;
 
-class TypescriptTransformer
+class LaravelTypescript
 {
 
     /**
@@ -48,19 +47,19 @@ class TypescriptTransformer
 
     public function run(): void
     {
-        dump($this->getCustomAttributeTypes(new Account()));
-//        \File::ensureDirectoryExists(dirname($this->outputPath));
-//        \File::put($this->outputPath, "");
-//
-//        $this->getTypes()
-//            ->groupBy('namespace')
-//            ->each(function (Collection $types, string $namespace) {
-//                \File::append($this->outputPath, "export namespace " . str($namespace)->replace("\\", ".")->value() . "{\n");
-//                $types->each(function (TypescriptType $typescriptType) {
-//                    \File::append($this->outputPath, $typescriptType->generate());
-//                });
-//                \File::append($this->outputPath, "}\n");
-//            });
+
+        File::ensureDirectoryExists(dirname($this->outputPath));
+        File::put($this->outputPath, "");
+
+        $this->getTypes()
+            ->groupBy('namespace')
+            ->each(function (Collection $types, string $namespace) {
+                File::append($this->outputPath, "export namespace " . str($namespace)->replace("\\", ".")->value() . "{\n");
+                $types->each(function (TypescriptType $typescriptType) {
+                    File::append($this->outputPath, $typescriptType->generate());
+                });
+                File::append($this->outputPath, "}\n");
+            });
     }
 
 
@@ -79,9 +78,15 @@ class TypescriptTransformer
                 $contents->put($key, $value);
             });
 
-            $this->getModelRelations($modelClass)->each(function (string $value, string $key) use (&$contents) {
-                $contents->put($key, $value);
-            });
+            $this->getModelRelations($modelClass)
+                ->each(function (string $value, string $key) use (&$contents) {
+                    $contents->put($key, $value);
+                });
+
+            $this->getCustomAttributeTypes($modelClass)
+                ->each(function (string $value, string $key) use (&$contents) {
+                    $contents->put($key, $value);
+                });
 
             return new TypescriptType(
                 namespace: $namespace,
@@ -104,10 +109,10 @@ class TypescriptTransformer
                 return collect($type::cases())->map(fn($option) => "\"$option->value\"")->implode(' | ');
             }
 
-            return Type::toTypescript(Casts::type($type));
+            return DatabaseType::toTypescript(Casts::type($type));
         }
 
-        return Type::toTypescript($column->getType());
+        return DatabaseType::toTypescript($column->getType());
     }
 
     /**
@@ -146,14 +151,16 @@ class TypescriptTransformer
         }
 
         $reflection = new \ReflectionClass($model);
-        return collect($reflection->getMethods())->filter(function (ReflectionMethod $method) {
-            $returnType = $method->getReturnType();
-            return $returnType !== null && is_subclass_of($returnType->getName(), Relation::class);
-        })->mapWithKeys(function (ReflectionMethod $reflectionMethod) use ($model) {
-            return [
-                $reflectionMethod->getName() => $this->getRelatedClassType($model->{$reflectionMethod->getName()}())
-            ];
-        });
+
+        return collect($reflection->getMethods())
+            ->filter(function (ReflectionMethod $method) {
+                $returnType = $method->getReturnType();
+                return $method->hasReturnType() && $returnType instanceof \ReflectionNamedType && is_subclass_of($returnType->getName(), Relation::class);
+            })->mapWithKeys(function (ReflectionMethod $reflectionMethod) use ($model) {
+                return [
+                    str($reflectionMethod->getName())->snake()->value() => $this->getRelatedClassType($model->{$reflectionMethod->getName()}())
+                ];
+            });
     }
 
     public function getRelatedClassType(Relation $relation): string
@@ -165,7 +172,7 @@ class TypescriptTransformer
             HasMany::class, HasManyThrough::class,
             BelongsToMany::class, MorphMany::class, MorphToMany::class => "{$shorName}[]",
             MorphOneOrMany::class => "{$shorName}|{$shorName}[]",
-            default => "string"
+            default => "any"
         };
 
         //MorphPivot::class=>,
@@ -189,7 +196,7 @@ class TypescriptTransformer
                     && $methodName->endsWith("Attribute")
                     && $reflectionMethod->getName() !== "getAttribute"
                 ) || ($reflectionMethod->getReturnType()?->getName() === Attribute::class);
-        })->mapWithKeys(function (ReflectionMethod $reflectionMethod) {
+        })->mapWithKeys(function (ReflectionMethod $reflectionMethod) use ($model) {
             $methodName = str($reflectionMethod->getName());
             if ($methodName->startsWith("get") && $methodName->endsWith("Attribute")) {
                 return [
@@ -197,12 +204,28 @@ class TypescriptTransformer
                         ->after('get')
                         ->beforeLast('Attribute')
                         ->snake()
-                        ->value() => $reflectionMethod
+                        ->value() => $this->toTypescript($reflectionMethod->getReturnType())
                 ];
             }
+
             return [
-                $reflectionMethod->getName() => $reflectionMethod
+                str($reflectionMethod->getName())->snake()->value() => $this->toTypescript(
+                    (new \ReflectionFunction($model->{$reflectionMethod->getName()}()->get))->getReturnType()
+                )
             ];
         });
+    }
+
+    private function toTypescript(\ReflectionUnionType|\ReflectionNamedType|null $type = null): string
+    {
+        if (is_null($type)) {
+            return "null";
+        }
+        if ($type instanceof \ReflectionUnionType) {
+            return collect($type->getTypes())
+                ->map(fn(\ReflectionNamedType $namedType) => PhpType::toTypescript($namedType->getName()))
+                ->implode("|");
+        }
+        return PhpType::toTypescript($type->getName());
     }
 }

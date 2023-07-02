@@ -1,10 +1,9 @@
 <?php
 
-namespace Wovosoft\TypescriptTransformer\Commands;
+namespace Wovosoft\LaravelTypescript\Commands;
 
-use Doctrine\DBAL\Exception;
 use Illuminate\Console\Command;
-use Wovosoft\TypescriptTransformer\TypescriptTransformer;
+use Wovosoft\LaravelTypescript\LaravelTypescript;
 
 class TypescriptModelTransformer extends Command
 {
@@ -24,13 +23,11 @@ class TypescriptModelTransformer extends Command
 
     /**
      * Execute the console command.
-     * @throws Exception
-     * @throws \ReflectionException
      * @throws \Exception
      */
     public function handle(): void
     {
-        $transformer = new TypescriptTransformer(
+        $transformer = new LaravelTypescript(
             outputPath: resource_path("js/types/models.d.ts"),
             sourceDir: app_path("Models")
         );

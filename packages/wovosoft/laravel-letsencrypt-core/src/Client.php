@@ -586,7 +586,7 @@ class Client
         $response = $this->getHttpClient()->request($method, $url, [
             'json'    => $payload,
             'headers' => [
-                'Content-Type' => 'application/jose+json',
+                'Content-DatabaseType' => 'application/jose+json',
             ],
         ]);
         $this->nonce = $response->getHeaderLine('replay-nonce');

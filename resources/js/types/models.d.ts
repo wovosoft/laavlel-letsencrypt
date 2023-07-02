@@ -1,68 +1,73 @@
-export namespace App.Models{
-	export interface Account {
-		id: number;
-		user_id: number;
-		account_id: string;
-		email: string;
-		is_valid: "active" | "inactive";
-		created_at: string;
-		updated_at: string;
-		domains: Domain[];
-		certificates: Certificate[];
-	}
+export namespace App.Models {
+    export interface Account {
+        id: number;
+        user_id: number;
+        account_id: string;
+        email: string;
+        is_valid: "active" | "inactive";
+        created_at: string;
+        updated_at: string;
+        domains: Domain[];
+        certificates: Certificate[];
+        test1: string | number | null;
+        another_test: string;
+        test2: string | number;
+    }
 
-	export interface Certificate {
-		id: number;
-		domain_id: number;
-		issue_date: string;
-		expiry_date: string;
-		private_key: string;
-		certificate: string;
-		created_at: string;
-		updated_at: string;
-		account: Account;
-		domain: Domain;
-	}
+    export interface Certificate {
+        id: number;
+        domain_id: number;
+        issue_date: string;
+        expiry_date: string;
+        private_key: string;
+        certificate: string;
+        created_at: string;
+        updated_at: string;
+        account: Account;
+        domain: Domain;
+        is_expired: null;
+    }
 
-	export interface Domain {
-		id: number;
-		account_id: number;
-		domain: string;
-		is_ownership_verified: boolean;
-		created_at: string;
-		updated_at: string;
-		account: Account;
-		certificates: Certificate[];
-		orders: Order[];
-	}
+    export interface Domain {
+        id: number;
+        account_id: number;
+        domain: string;
+        is_ownership_verified: boolean;
+        created_at: string;
+        updated_at: string;
+        account: Account;
+        certificates: Certificate[];
+        orders: Order[];
+    }
 
-	export interface Order {
-		id: number;
-		domain_id: number;
-		order_id: string;
-		expires: string;
-		created_at: string;
-		updated_at: string;
-		domain: Domain;
-		account: Account;
-	}
+    export interface Order {
+        id: number;
+        domain_id: number;
+        order_id: string;
+        expires: string;
+        created_at: string;
+        updated_at: string;
+        domain: Domain;
+        account: Account;
+    }
 
-	export interface User {
-		id: number;
-		name: string;
-		email: string;
-		email_verified_at: string;
-		password: string;
-		two_factor_secret: string;
-		two_factor_recovery_codes: string;
-		two_factor_confirmed_at: string;
-		remember_token: string;
-		current_team_id: number;
-		profile_photo_path: string;
-		created_at: string;
-		updated_at: string;
-		accounts: Account[];
-		domains: Domain[];
-	}
+    export interface User {
+        id: number;
+        name: string;
+        email: string;
+        email_verified_at: string;
+        password: string;
+        two_factor_secret: string;
+        two_factor_recovery_codes: string;
+        two_factor_confirmed_at: string;
+        remember_token: string;
+        current_team_id: number;
+        profile_photo_path: string;
+        created_at: string;
+        updated_at: string;
+        accounts: Account[];
+        domains: Domain[];
+        profile_photo_url: null;
+    }
 
 }

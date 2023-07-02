@@ -1,6 +1,6 @@
 <?php
 
-namespace Wovosoft\TypescriptTransformer;
+namespace Wovosoft\LaravelTypescript;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;

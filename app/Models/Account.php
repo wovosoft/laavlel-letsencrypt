@@ -17,13 +17,16 @@ use Wovosoft\LaravelLetsencryptCore\LaravelClient;
  * @property int $user_id
  * @property string|null $account_id
  * @property string $email
- * @property int $is_valid
+ * @property Status $is_valid
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Certificate> $certificates
  * @property-read int|null $certificates_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Domain> $domains
  * @property-read int|null $domains_count
+ * @property-read string $another_test
+ * @property-read string|int|null $test1
+ * @property-read string|int $test2
  * @method static \Illuminate\Database\Eloquent\Builder|Account newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Account newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Account query()
@@ -42,7 +45,7 @@ class Account extends Model
 
     protected $casts = [
         "created_at" => "datetime",
-        "is_valid" => Status::class //remove It's for testing
+        "is_valid"   => Status::class //remove It's for testing
     ];
 
     /**
@@ -70,7 +73,7 @@ class Account extends Model
         );
     }
 
-    public function getTest1Attribute(): string
+    public function getTest1Attribute(): string|int|null
     {
         return "test1";
     }
@@ -82,6 +85,6 @@ class Account extends Model
 
     public function test2(): Attribute
     {
-        return Attribute::get(fn() => "test2");
+        return Attribute::get(fn(): string|int => "test2");
     }
 }

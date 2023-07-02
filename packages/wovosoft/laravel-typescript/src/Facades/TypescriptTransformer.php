@@ -1,6 +1,6 @@
 <?php
 
-namespace Wovosoft\TypescriptTransformer\Facades;
+namespace Wovosoft\LaravelTypescript\Facades;
 
 use Illuminate\Support\Facades\Facade;
 
@@ -13,6 +13,6 @@ class TypescriptTransformer extends Facade
      */
     protected static function getFacadeAccessor(): string
     {
-        return 'typescript-transformer';
+        return 'laravel-typescript';
     }
 }

@@ -1,6 +1,6 @@
 <?php
 
-namespace Wovosoft\TypescriptTransformer;
+namespace Wovosoft\LaravelTypescript;
 
 use Doctrine\DBAL\Types\Type as DoctrineType;
 
@@ -8,7 +8,7 @@ use Doctrine\DBAL\Types\Type as DoctrineType;
  * Default built-in types provided by Doctrine DBAL.
  * @source Doctrine\DBAL\Types\Types;
  */
-enum Type: string
+enum DatabaseType: string
 {
     case ARRAY                = 'array';
     case ASCII_STRING         = 'ascii_string';
@@ -36,7 +36,7 @@ enum Type: string
     case TIME_MUTABLE         = 'time';
     case TIME_IMMUTABLE       = 'time_immutable';
 
-    public static function toTypescript(string|Type|DoctrineType $type): string
+    public static function toTypescript(string|DatabaseType|DoctrineType $type): string
     {
         if (is_string($type)) {
             $type = self::tryFrom($type);
@@ -45,7 +45,7 @@ enum Type: string
         }
 
         return match ($type) {
-            self::ARRAY, self::SIMPLE_ARRAY => "array",
+            self::ARRAY, self::SIMPLE_ARRAY => "any[]",
             self::BIGINT, self::BINARY, self::SMALLINT, self::INTEGER, self::FLOAT, self::DECIMAL, self::DATEINTERVAL => "number",
             self::BLOB => "Blob",
             self::BOOLEAN => "boolean",

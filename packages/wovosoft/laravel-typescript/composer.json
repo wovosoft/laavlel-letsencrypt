@@ -1,0 +1,37 @@
+{
+    "name": "wovosoft/laravel-typescript",
+    "description": ":package_description",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Narayan Adhikary",
+            "email": "wovosoft@gmail.com",
+            "homepage": "https://wovosoft.com"
+        }
+    ],
+    "homepage": "https://github.com/wovosoft/laravel-typescript",
+    "keywords": [
+        "Laravel",
+        "Typescript Transformer"
+    ],
+    "autoload": {
+        "psr-4": {
+            "Wovosoft\\LaravelTypescript\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Wovosoft\\LaravelTypescript\\Tests\\": "tests"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Wovosoft\\LaravelTypescript\\LaravelTypescriptServiceProvider"
+            ],
+            "aliases": {
+                "LaravelTypescript": "Wovosoft\\LaravelTypescript\\Facades\\LaravelTypescript"
+            }
+        }
+    }
+}
