@@ -4,20 +4,27 @@ namespace Wovosoft\LaravelLetsencryptCore;
 
 use Exception;
 use GuzzleHttp\Exception\GuzzleException;
-use League\Flysystem\FilesystemException;
+use GuzzleHttp\Promise\PromiseInterface;
+use Illuminate\Contracts\Filesystem\Filesystem;
+use Illuminate\Http\Client\PendingRequest;
+use Illuminate\Http\Client\Response;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
 use OpenSSLAsymmetricKey;
 use Wovosoft\LaravelLetsencryptCore\Data\Account;
 use Wovosoft\LaravelLetsencryptCore\Data\Authorization;
 use Wovosoft\LaravelLetsencryptCore\Data\Certificate;
 use Wovosoft\LaravelLetsencryptCore\Data\Challenge;
+use Wovosoft\LaravelLetsencryptCore\Data\Directories;
 use Wovosoft\LaravelLetsencryptCore\Data\Order;
 use GuzzleHttp\Client as HttpClient;
 use GuzzleHttp\Exception\RequestException;
-use League\Flysystem\Filesystem;
-use Psr\Http\Message\ResponseInterface;
+use Wovosoft\LaravelLetsencryptCore\Enums\Modes;
 
 class Client
 {
+    const CONTENT_TYPE = 'application/jose+json';
     /**
      * Live url
      */
@@ -29,31 +36,6 @@ class Client
     const DIRECTORY_STAGING = 'https://acme-staging-v02.api.letsencrypt.org/directory';
 
     /**
-     * Flag for production
-     */
-    const MODE_LIVE = 'live';
-
-    /**
-     * Flag for staging
-     */
-    const MODE_STAGING = 'staging';
-
-    /**
-     * New account directory
-     */
-    const DIRECTORY_NEW_ACCOUNT = 'newAccount';
-
-    /**
-     * Nonce directory
-     */
-    const DIRECTORY_NEW_NONCE = 'newNonce';
-
-    /**
-     * Order certificate directory
-     */
-    const DIRECTORY_NEW_ORDER = 'newOrder';
-
-    /**
      * Http validation
      */
     const VALIDATION_HTTP = 'http-01';
@@ -62,54 +44,108 @@ class Client
      * DNS validation
      */
     const VALIDATION_DNS = 'dns-01';
+    protected int $keyLength = 4096;
 
     protected ?string $nonce = null;
 
-    protected Account $account;
+    protected ?Account $account = null;
 
     protected array $privateKeyDetails;
 
     protected ?OpenSSLAsymmetricKey $accountKey = null;
 
-    protected Filesystem $filesystem;
 
-    protected array $directories = [];
+    protected ?Directories $directories;
 
-    protected array $header = [];
 
     protected ?string $digest = null;
 
     protected ?HttpClient $httpClient = null;
+    protected ?Filesystem $filesystem;
 
-    protected array $config;
 
     /**
-     * Client constructor.
-     *
-     * @param array $config
-     *
-     * @type string $mode The mode for ACME (production / staging)
-     * @type Filesystem $fs Filesystem for storage of static data
-     * @type string $basePath The base path for the filesystem (used to store account information and csr / keys
-     * @type string $username The acme username
-     * @type string $source_ip The source IP for Guzzle (via curl. Options) to bind to (defaults to 0.0.0.0 [OS default])
-     * }
-     * @throws Exception|GuzzleException
+     * @throws Exception
      */
-    public function __construct(array $config = [])
+    public function __construct(
+        public Modes   $mode,
+        public string  $username,
+        public ?string $basePath = null,
+        public ?string $disk = null,
+        public ?string $source_ip = null
+    )
     {
-        $this->config = $config;
-        if ($this->getOption('fs', false)) {
-            $this->filesystem = $this->getOption('fs');
-        } else {
-            throw new \LogicException('No filesystem option supplied');
+        if (!$this->basePath) {
+            $this->basePath = config("laravel-letsencrypt-core.basepath");
         }
-
-        if ($this->getOption('username', false) === false) {
-            throw new \LogicException('Username not provided');
+        if ($this->disk) {
+            $this->disk = config("laravel-letsencrypt-core.disk");
         }
-
         $this->init();
+    }
+
+    /**
+     * @throws Exception
+     */
+    protected function init(): void
+    {
+        $this->filesystem = Storage::disk($this->disk);
+
+        $this->directories = new Directories($this->getClient()->get("/directory")->object());
+
+        //Prepare LE account
+        $this->loadKeys();
+
+        $this->tosAgree();
+        $this->account = $this->getAccount();
+    }
+
+    private function getClient(): PendingRequest
+    {
+        return Http::setClient(client: $this->getHttpClient())->contentType(self::CONTENT_TYPE);
+    }
+
+    protected function request($url, array $payload = [], string $method = 'POST'): PromiseInterface|Response
+    {
+        $response = $this->getClient()->$method($url, $payload);
+        $this->nonce = $response->header('Replay-Nonce');
+
+        return $response;
+    }
+
+    protected function loadKeys(): void
+    {
+        //Make sure a private key is in place
+        if (!$this->filesystem->exists($this->getPath('account.pem'))) {
+            $this->filesystem->put(
+                $this->getPath('account.pem'),
+                Helper::getNewKey($this->keyLength)
+            );
+        }
+        $privateKey = $this->filesystem->get($this->getPath('account.pem'));
+        $privateKey = openssl_pkey_get_private($privateKey);
+        $this->privateKeyDetails = openssl_pkey_get_details($privateKey);
+    }
+
+    /**
+     * Agree to the terms of service
+     *
+     * @throws Exception
+     */
+    protected function tosAgree(): void
+    {
+        $this->request(
+            $this->directories->newAccount,
+            $this->signPayloadJWK(
+                [
+                    'contact'              => [
+                        'mailto:' . $this->username,
+                    ],
+                    'termsOfServiceAgreed' => true,
+                ],
+                $this->directories->newAccount
+            )
+        );
     }
 
     /**
@@ -118,29 +154,25 @@ class Client
      * @param $id
      * @return Order
      * @throws Exception
-     * @throws GuzzleException
-     * @throws FilesystemException
      */
     public function getOrder($id): Order
     {
-        $url = str_replace('new-order', 'order', $this->getUrl(self::DIRECTORY_NEW_ORDER));
-        $url = $url . '/' . $this->getAccount()->getId() . '/' . $id;
-        $response = $this->request($url, $this->signPayloadKid(null, $url));
-        $data = json_decode((string)$response->getBody(), true);
 
-        $domains = [];
-        foreach ($data['identifiers'] as $identifier) {
-            $domains[] = $identifier['value'];
-        }
+        $url = str($this->directories->newOrder)
+            ->replace('new-order', 'order')
+            ->append('/' . $this->getAccount()->getId() . '/' . $id)
+            ->value();
+
+        $data = $this->request($url, $this->signPayloadKid(null, $url))->json();
 
         return new Order(
-            $domains,
-            $url,
-            $data['status'],
-            $data['expires'],
-            $data['identifiers'],
-            $data['authorizations'],
-            $data['finalize']
+            domains: collect($data['identifiers'])->map(fn($identifier) => $identifier['value'])->toArray(),
+            url: $url,
+            status: $data['status'],
+            expiresAt: $data['expires'],
+            identifiers: $data['identifiers'],
+            authorizations: $data['authorizations'],
+            finalizeURL: $data['finalize']
         );
     }
 
@@ -153,10 +185,7 @@ class Client
      */
     public function isReady(Order $order): bool
     {
-        try {
-            $order = $this->getOrder($order->getId());
-        } catch (GuzzleException|FilesystemException $e) {
-        }
+        $order = $this->getOrder($order->getId());
         return $order->getStatus() == 'ready';
     }
 
@@ -167,37 +196,30 @@ class Client
      * @param array $domains
      * @return Order
      * @throws Exception
-     * @throws GuzzleException
-     * @throws FilesystemException
      */
     public function createOrder(array $domains): Order
     {
-        $identifiers = [];
-        foreach ($domains as $domain) {
-            $identifiers[] =
+        $response = $this
+            ->request($this->directories->newOrder, $this->signPayloadKid(
                 [
-                    'type'  => 'dns',
-                    'value' => $domain,
-                ];
-        }
+                    'identifiers' => collect($domains)->map(fn($domain) => [
+                        "type"  => "dns",
+                        "value" => $domain
+                    ])->toArray(),
+                ],
+                $this->directories->newOrder
+            ));
 
-        $url = $this->getUrl(self::DIRECTORY_NEW_ORDER);
-        $response = $this->request($url, $this->signPayloadKid(
-            [
-                'identifiers' => $identifiers,
-            ],
-            $url
-        ));
+        $data = $response->json();
 
-        $data = json_decode((string)$response->getBody(), true);
         return new Order(
-            $domains,
-            $response->getHeaderLine('location'),
-            $data['status'],
-            $data['expires'],
-            $data['identifiers'],
-            $data['authorizations'],
-            $data['finalize']
+            domains: $domains,
+            url: $response->header('Location'),
+            status: $data['status'],
+            expiresAt: $data['expires'],
+            identifiers: $data['identifiers'],
+            authorizations: $data['authorizations'],
+            finalizeURL: $data['finalize']
         );
     }
 
@@ -205,43 +227,47 @@ class Client
      * Obtain authorizations
      *
      * @param Order $order
-     * @return array|Authorization[]
-     * @throws Exception
-     * @throws GuzzleException
-     * @throws FilesystemException
+     * @return Collection<Authorization>
      */
-    public function authorize(Order $order): array
+    public function authorize(Order $order): Collection
     {
-        $authorizations = [];
-        foreach ($order->getAuthorizationURLs() as $authorizationURL) {
-            $response = $this->request(
-                $authorizationURL,
-                $this->signPayloadKid(null, $authorizationURL)
-            );
-            $data = json_decode((string)$response->getBody(), true);
-            $authorization = new Authorization($data['identifier']['value'], $data['expires'], $this->getDigest());
-
-            foreach ($data['challenges'] as $challengeData) {
-                $challenge = new Challenge(
+        return $order
+            ->getAuthorizationURLs()
+            ->map(function (string $authorizationURL) {
+                $response = $this->request(
                     $authorizationURL,
-                    $challengeData['type'],
-                    $challengeData['status'],
-                    $challengeData['url'],
-                    $challengeData['token']
+                    $this->signPayloadKid(null, $authorizationURL)
                 );
-                $authorization->addChallenge($challenge);
-            }
-            $authorizations[] = $authorization;
-        }
 
-        return $authorizations;
+                $data = $response->json();
+
+                $authorization = new Authorization(
+                    domain: $data['identifier']['value'],
+                    expires: $data['expires'],
+                    digest: $this->getDigest()
+                );
+
+                foreach ($data['challenges'] as $challengeData) {
+                    $authorization->addChallenge(
+                        challenge: new Challenge(
+                            authorizationURL: $authorizationURL,
+                            type: $challengeData['type'],
+                            status: $challengeData['status'],
+                            url: $challengeData['url'],
+                            token: $challengeData['token']
+                        )
+                    );
+                }
+
+                return $authorization->toArray();
+            });
     }
 
     /**
      * Run a self-test for the authorization
      * @param Authorization $authorization
-     * @param string $type
-     * @param int $maxAttempts
+     * @param string        $type
+     * @param int           $maxAttempts
      * @return bool
      * @throws GuzzleException
      */
@@ -259,30 +285,27 @@ class Client
      * Validate a challenge
      *
      * @param Challenge $challenge
-     * @param int $maxAttempts
+     * @param int       $maxAttempts
      * @return bool
      * @throws Exception
-     * @throws GuzzleException|FilesystemException
      */
     public function validate(Challenge $challenge, int $maxAttempts = 15): bool
     {
-        try {
-            $this->request(
-                $challenge->getUrl(),
-                $this->signPayloadKid([
-                    'keyAuthorization' => $challenge->getToken() . '.' . $this->getDigest(),
-                ], $challenge->getUrl())
-            );
-        } catch (GuzzleException|FilesystemException $e) {
-        }
+        $this->request(
+            $challenge->getUrl(),
+            $this->signPayloadKid([
+                'keyAuthorization' => $challenge->getToken() . '.' . $this->getDigest(),
+            ], $challenge->getUrl())
+        );
 
-        $data = [];
         do {
             $response = $this->request(
                 $challenge->getAuthorizationURL(),
                 $this->signPayloadKid(null, $challenge->getAuthorizationURL())
             );
-            $data = json_decode((string)$response->getBody(), true);
+
+            $data = $response->json();
+
             if ($maxAttempts > 1 && $data['status'] != 'valid') {
                 sleep(ceil(15 / $maxAttempts));
             }
@@ -298,12 +321,10 @@ class Client
      * @param Order $order
      * @return Certificate
      * @throws Exception
-     * @throws GuzzleException
-     * @throws FilesystemException
      */
     public function getCertificate(Order $order): Certificate
     {
-        $privateKey = Helper::getNewKey($this->getOption('key_length', 4096));
+        $privateKey = Helper::getNewKey($this->keyLength);
         $csr = Helper::getCsr($order->getDomains(), $privateKey);
         $der = Helper::toDer($csr);
 
@@ -315,38 +336,44 @@ class Client
             )
         );
 
-        $data = json_decode((string)$response->getBody(), true);
+        $data = $response->object();
         $certificateResponse = $this->request(
             $data['certificate'],
             $this->signPayloadKid(null, $data['certificate'])
         );
-        $chain = preg_replace('/^[ \t]*[\r\n]+/m', '', (string)$certificateResponse->getBody());
+        $chain = preg_replace('/^[ \t]*[\r\n]+/m', '', (string)$certificateResponse->body());
         return new Certificate($privateKey, $csr, $chain);
     }
-
 
     /**
      * Return LE account information
      *
      * @return Account
-     * @throws Exception|GuzzleException
+     * @throws Exception
      */
     public function getAccount(): Account
     {
-        $response = $this->request(
-            $this->getUrl(self::DIRECTORY_NEW_ACCOUNT),
-            $this->signPayloadJWK(
-                [
-                    'onlyReturnExisting' => true,
-                ],
-                $this->getUrl(self::DIRECTORY_NEW_ACCOUNT)
-            )
-        );
+        if ($this->account) {
+            return $this->account;
+        }
+        $response = $this
+            ->getClient()
+            ->contentType('application/jose+json')
+            ->post($this->directories->newAccount, $this->signPayloadJWK(
+                ['onlyReturnExisting' => true],
+                $this->directories->newAccount
+            ));
 
-        $data = json_decode((string)$response->getBody(), true);
-        $accountURL = $response->getHeaderLine('Location');
-        $date = (new \DateTime())->setTimestamp(strtotime($data['createdAt']));
-        return new Account($data['contact'], $date, ($data['status'] == 'valid'), $data['initialIp'], $accountURL);
+        $this->nonce = $response->header('Replay-Nonce');
+        $data = $response->json();
+
+        return new Account(
+            contact: $data['contact'],
+            createdAt: (new \DateTime())->setTimestamp(strtotime($data['createdAt'])),
+            isValid: ($data['status'] === 'valid'),
+            initialIp: $data['initialIp'],
+            accountURL: $response->header('Location')
+        );
     }
 
     /**
@@ -357,12 +384,13 @@ class Client
     {
         if ($this->httpClient === null) {
             $config = [
-                'base_uri' => (
-                ($this->getOption('mode', self::MODE_LIVE) == self::MODE_LIVE) ?
-                    self::DIRECTORY_LIVE : self::DIRECTORY_STAGING),
+                'base_uri' => match ($this->mode) {
+                    Modes::Staging => self::DIRECTORY_STAGING,
+                    Modes::Live => self::DIRECTORY_LIVE
+                },
             ];
-            if ($this->getOption('source_ip', false) !== false) {
-                $config['curl.options']['CURLOPT_INTERFACE'] = $this->getOption('source_ip');
+            if ($this->source_ip) {
+                $config['curl.options']['CURLOPT_INTERFACE'] = $this->source_ip;
             }
             $this->httpClient = new HttpClient($config);
         }
@@ -386,8 +414,9 @@ class Client
     /**
      * Self HTTP test
      * @param Authorization $authorization
-     * @param $maxAttempts
+     * @param               $maxAttempts
      * @return bool
+     * @throws GuzzleException
      */
     protected function selfHttpTest(Authorization $authorization, $maxAttempts): bool
     {
@@ -413,7 +442,7 @@ class Client
     /**
      * Self DNS test client that uses Cloudflare's DNS API
      * @param Authorization $authorization
-     * @param $maxAttempts
+     * @param               $maxAttempts
      * @return bool
      * @throws GuzzleException
      */
@@ -461,59 +490,6 @@ class Client
         ]);
     }
 
-    /**
-     * Initialize the client
-     * @throws Exception
-     * @throws GuzzleException
-     */
-    protected function init(): void
-    {
-        //Load the directories from the LE api
-        $response = $this->getHttpClient()->get('/directory');
-        $result = json_decode((string)$response->getBody(), true);
-        $this->directories = $result;
-
-        //Prepare LE account
-        $this->loadKeys();
-        $this->tosAgree();
-        $this->account = $this->getAccount();
-    }
-
-    protected function loadKeys(): void
-    {
-        //Make sure a private key is in place
-        if ($this->getFilesystem()->has($this->getPath('account.pem')) === false) {
-            $this->getFilesystem()->write(
-                $this->getPath('account.pem'),
-                Helper::getNewKey($this->getOption('key_length', 4096))
-            );
-        }
-        $privateKey = $this->getFilesystem()->read($this->getPath('account.pem'));
-        $privateKey = openssl_pkey_get_private($privateKey);
-        $this->privateKeyDetails = openssl_pkey_get_details($privateKey);
-    }
-
-    /**
-     * Agree to the terms of service
-     *
-     * @throws Exception
-     * @throws GuzzleException
-     */
-    protected function tosAgree(): void
-    {
-        $this->request(
-            $this->getUrl(self::DIRECTORY_NEW_ACCOUNT),
-            $this->signPayloadJWK(
-                [
-                    'contact'              => [
-                        'mailto:' . $this->getOption('username'),
-                    ],
-                    'termsOfServiceAgreed' => true,
-                ],
-                $this->getUrl(self::DIRECTORY_NEW_ACCOUNT)
-            )
-        );
-    }
 
     /**
      * Get a formatted path
@@ -523,47 +499,27 @@ class Client
      */
     protected function getPath($path = null): string
     {
-        $userDirectory = preg_replace('/[^a-z0-9]+/', '-', strtolower($this->getOption('username')));
+        $userDirectory = preg_replace('/[^a-z0-9]+/', '-', strtolower($this->username));
 
-        return $this->getOption(
-                'basePath',
-                'le'
-            ) . DIRECTORY_SEPARATOR . $userDirectory . ($path === null ? '' : DIRECTORY_SEPARATOR . $path);
+        return $this->basePath . DIRECTORY_SEPARATOR . $userDirectory . ($path === null ? '' : DIRECTORY_SEPARATOR . $path);
     }
 
     /**
      * Return the Flysystem filesystem
      * @return Filesystem
      */
-    protected function getFilesystem(): Filesystem
+    public function getFilesystem(): Filesystem
     {
         return $this->filesystem;
-    }
-
-    /**
-     * Get a defined option
-     *
-     * @param      $key
-     * @param null $default
-     *
-     * @return mixed|null
-     */
-    protected function getOption($key, $default = null): mixed
-    {
-        if (isset($this->config[$key])) {
-            return $this->config[$key];
-        }
-
-        return $default;
     }
 
     /**
      * Get key fingerprint
      *
      * @return string
-     * @throws Exception|FilesystemException
+     * @throws Exception
      */
-    protected function getDigest(): string
+    public function getDigest(): string
     {
         if ($this->digest === null) {
             $this->digest = Helper::toSafeString(hash('sha256', json_encode($this->getJWKHeader()), true));
@@ -572,55 +528,14 @@ class Client
         return $this->digest;
     }
 
-    /**
-     * Send a request to the LE API
-     *
-     * @param $url
-     * @param array $payload
-     * @param string $method
-     * @return ResponseInterface
-     * @throws GuzzleException
-     */
-    protected function request($url, array $payload = [], string $method = 'POST'): ResponseInterface
-    {
-        $response = $this->getHttpClient()->request($method, $url, [
-            'json'    => $payload,
-            'headers' => [
-                'Content-DatabaseType' => 'application/jose+json',
-            ],
-        ]);
-        $this->nonce = $response->getHeaderLine('replay-nonce');
-
-        return $response;
-    }
 
     /**
-     * Get the LE directory path
-     *
-     * @param $directory
-     *
-     * @return mixed
-     * @throws Exception
-     */
-    protected function getUrl($directory): string
-    {
-        if (isset($this->directories[$directory])) {
-            return $this->directories[$directory];
-        }
-
-        throw new Exception('Invalid directory: ' . $directory . ' not listed');
-    }
-
-
-    /**
-     * @throws FilesystemException
      * @throws Exception
      */
     protected function getAccountKey(): bool|OpenSSLAsymmetricKey
     {
         if ($this->accountKey === null) {
-            $this->accountKey = openssl_pkey_get_private($this->getFilesystem()
-                ->read($this->getPath('account.pem')));
+            $this->accountKey = openssl_pkey_get_private($this->getFilesystem()->get($this->getPath('account.pem')));
         }
 
         if ($this->accountKey === false) {
@@ -635,7 +550,6 @@ class Client
      *
      * @return array
      * @throws Exception
-     * @throws FilesystemException
      */
     protected function getJWKHeader(): array
     {
@@ -652,15 +566,13 @@ class Client
      * @param $url
      * @return array
      * @throws Exception
-     * @throws FilesystemException
-     * @throws GuzzleException
      */
     protected function getJWK($url): array
     {
         //Require a nonce to be available
         if ($this->nonce === null) {
-            $response = $this->getHttpClient()->head($this->directories[self::DIRECTORY_NEW_NONCE]);
-            $this->nonce = $response->getHeaderLine('replay-nonce');
+            $response = $this->getClient()->head($this->directories->newNonce);
+            $this->nonce = $response->header('Replay-Nonce');
         }
         return [
             'alg'   => 'RS256',
@@ -675,17 +587,17 @@ class Client
      *
      * @param $url
      * @return array
-     * @throws GuzzleException
      */
     protected function getKID($url): array
     {
-        $response = $this->getHttpClient()->head($this->directories[self::DIRECTORY_NEW_NONCE]);
-        $nonce = $response->getHeaderLine('replay-nonce');
+        $response = $this
+            ->getClient()
+            ->head($this->directories->newNonce);
 
         return [
             "alg"   => "RS256",
             "kid"   => $this->account->getAccountURL(),
-            "nonce" => $nonce,
+            "nonce" => $response->header('Replay-Nonce'),
             "url"   => $url,
         ];
     }
@@ -724,12 +636,11 @@ class Client
      * @param $url
      * @return array
      * @throws Exception
-     * @throws FilesystemException
-     * @throws GuzzleException
      */
     protected function signPayloadKid($payload, $url): array
     {
         $payload = is_array($payload) ? str_replace('\\/', '/', json_encode($payload)) : '';
+
         $payload = Helper::toSafeString($payload);
         $protected = Helper::toSafeString(json_encode($this->getKID($url)));
 
@@ -743,5 +654,10 @@ class Client
             'payload'   => $payload,
             'signature' => Helper::toSafeString($signature),
         ];
+    }
+
+    public function getDirectories(): ?Directories
+    {
+        return $this->directories;
     }
 }

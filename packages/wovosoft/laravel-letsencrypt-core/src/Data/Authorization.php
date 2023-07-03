@@ -3,7 +3,7 @@
 namespace Wovosoft\LaravelLetsencryptCore\Data;
 
 use Illuminate\Support\Carbon;
-use Wovosoft\LaravelLetsencryptCore\LaravelClient;
+use Wovosoft\LaravelLetsencryptCore\Client;
 use Wovosoft\LaravelLetsencryptCore\Helper;
 
 class Authorization extends BaseData
@@ -66,7 +66,7 @@ class Authorization extends BaseData
     public function getHttpChallenge(): Challenge|bool
     {
         foreach ($this->getChallenges() as $challenge) {
-            if ($challenge->getType() == LaravelClient::VALIDATION_HTTP) {
+            if ($challenge->getType() == Client::VALIDATION_HTTP) {
                 return $challenge;
             }
         }
@@ -80,7 +80,7 @@ class Authorization extends BaseData
     public function getDnsChallenge(): Challenge|bool
     {
         foreach ($this->getChallenges() as $challenge) {
-            if ($challenge->getType() == LaravelClient::VALIDATION_DNS) {
+            if ($challenge->getType() == Client::VALIDATION_DNS) {
                 return $challenge;
             }
         }
@@ -90,13 +90,13 @@ class Authorization extends BaseData
 
     /**
      * Return File object for the given challenge
-     * @return File|bool
+     * @return VerificationFile|bool
      */
-    public function getFile(): File|bool
+    public function getFile(): VerificationFile|bool
     {
         $challenge = $this->getHttpChallenge();
         if ($challenge !== false) {
-            return new File($challenge->getToken(), $challenge->getToken() . '.' . $this->digest);
+            return new VerificationFile($challenge->getToken(), $challenge->getToken() . '.' . $this->digest);
         }
         return false;
     }
@@ -125,8 +125,8 @@ class Authorization extends BaseData
             "domain" => $this->domain,
             "expires" => $this->expires,
             "challenges" => collect($this->challenges)->map(fn(Challenge $challenge) => $challenge->toArray())->toArray(),
-            "http_challenge" => $this->getHttpChallenge()?->toArray(),
-            "dns_challenge" => $this->getDnsChallenge()?->toArray(),
+//            "http_challenge" => $this->getHttpChallenge()?->toArray(),
+//            "dns_challenge" => $this->getDnsChallenge()?->toArray(),
             "file" => $this->getFile()?->toArray(),
             "txt_record" => $this->getTxtRecord()?->toArray(),
         ];
