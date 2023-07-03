@@ -1,4 +1,4 @@
-export namespace App.Models{ 
+declare namespace App.Models{ 
 	export interface Certificate {
 		id: number;
 		domain_id: number;
@@ -8,8 +8,8 @@ export namespace App.Models{
 		certificate: string;
 		created_at: string;
 		updated_at: string;
-		account: Account | null;
-		domain: Domain | null;
+		account?: Account | null;
+		domain?: Domain | null;
 		is_expired: boolean;
 	}
 
@@ -20,9 +20,9 @@ export namespace App.Models{
 		is_ownership_verified: boolean;
 		created_at: string;
 		updated_at: string;
-		account: Account | null;
-		certificates: Certificate[] | null;
-		orders: Order[] | null;
+		account?: Account | null;
+		certificates?: Certificate[] | null;
+		orders?: Order[] | null;
 	}
 
 	export interface Account {
@@ -33,8 +33,8 @@ export namespace App.Models{
 		is_valid: "active" | "inactive";
 		created_at: string;
 		updated_at: string;
-		domains: Domain[] | null;
-		certificates: Certificate[] | null;
+		domains?: Domain[] | null;
+		certificates?: Certificate[] | null;
 	}
 
 	export interface Order {
@@ -44,8 +44,8 @@ export namespace App.Models{
 		expires: string;
 		created_at: string;
 		updated_at: string;
-		domain: Domain | null;
-		account: Account | null;
+		domain?: Domain | null;
+		account?: Account | null;
 	}
 
 	export interface User {
@@ -62,8 +62,8 @@ export namespace App.Models{
 		profile_photo_path: string;
 		created_at: string;
 		updated_at: string;
-		accounts: Account[] | null;
-		domains: Domain[] | null;
+		accounts?: Account[] | null;
+		domains?: Domain[] | null;
 		profile_photo_url: unknown;
 	}
 }
