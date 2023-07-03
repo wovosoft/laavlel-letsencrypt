@@ -2,7 +2,6 @@
 
 namespace Wovosoft\LaravelTypescript\Helpers;
 
-use Doctrine\DBAL\Exception;
 use Doctrine\DBAL\Schema\Column;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -33,6 +32,7 @@ class Transformer
 {
     /**
      * @param Collection<int,class-string<Model>> $classes
+     *
      * @return string
      */
     public static function generate(Collection $classes): string
@@ -40,15 +40,16 @@ class Transformer
         return static::getTypes($classes)
             ->groupBy('namespace')
             ->implode(function (Collection $types, string $namespace) {
-                $namespace = str($namespace)->replace("\\", ".")->value();
-                $typescript = PHP_EOL . $types->implode(fn(Typescript $typescriptType) => $typescriptType->generate(), PHP_EOL . PHP_EOL) . PHP_EOL;
+                $namespace = str($namespace)->replace('\\', '.')->value();
+                $typescript = PHP_EOL.$types->implode(fn (Typescript $typescriptType) => $typescriptType->generate(), PHP_EOL.PHP_EOL).PHP_EOL;
 
-                return "export namespace $namespace{ $typescript}";
+                return "declare namespace $namespace{ $typescript}";
             }, PHP_EOL);
     }
 
     /**
      * @param Collection<int,class-string<Model>> $classes
+     *
      * @return Collection<int,Typescript>
      */
     public static function getTypes(Collection $classes): Collection
@@ -56,12 +57,12 @@ class Transformer
         return $classes->map(function (string $modelClass) {
             $reflection = (new \ReflectionClass($modelClass));
 
-            $model = new $modelClass;
+            $model = Models::parseModel($modelClass);
 
             $contents = static::modelFields($model)
                 ->merge(static::modelRelations($model))
                 ->merge(static::customAttributes($model))
-                ->mapWithKeys(fn($value, $key) => [$key => $value]);
+                ->mapWithKeys(fn ($value, $key) => [$key => $value]);
 
             return new Typescript(
                 namespace: $reflection->getNamespaceName(),
@@ -73,20 +74,20 @@ class Transformer
     }
 
     /**
-     * @throws Exception
+     * @throws \Exception
      */
     public static function modelFields(string|Model $model)
     {
-        if (is_string($model)) {
-            $model = new $model;
-        }
-        return Models::getFieldsOf($model)->mapWithKeys(fn(Column $column) => [
-            $column->getName() => static::transform(item: $model, column: $column)
+        $model = Models::parseModel($model);
+
+        return Models::getFieldsOf($model)->mapWithKeys(fn (Column $column) => [
+            $column->getName() => static::transform(item: $model, column: $column),
         ]);
     }
 
     /**
      * @param class-string<Model>|Model $model
+     *
      * @throws ReflectionException
      */
     public static function modelRelations(string|Model $model): Collection
@@ -95,15 +96,19 @@ class Transformer
             $model = new $model();
         }
 
-        return Models::getRelatedModelsOf($model)->mapWithKeys(fn(ReflectionMethod $reflectionMethod) => [
-            str($reflectionMethod->getName())->snake()->value() => static::transform($model->{$reflectionMethod->getName()}())
+        return Models::getRelatedModelsOf($model)->mapWithKeys(fn (ReflectionMethod $reflectionMethod) => [
+            str($reflectionMethod->getName())->snake()->value() => [
+                'isUndefinable' => true,
+                'value'         => static::transform($model->{$reflectionMethod->getName()}()),
+            ],
         ]);
     }
 
     private static function isOldStyleAttribute(ReflectionMethod $reflectionMethod): bool
     {
         $methodName = str($reflectionMethod->getName());
-        return $methodName->startsWith("get") && $methodName->endsWith("Attribute");
+
+        return $methodName->startsWith('get') && $methodName->endsWith('Attribute');
     }
 
     private static function getCustomAttributeName(ReflectionMethod $reflectionMethod): string
@@ -117,31 +122,29 @@ class Transformer
         return $methodName->snake()->value();
     }
 
-
     /**
      * @description Attributes which returns Illuminate\Database\Eloquent\Casts\Attribute, that means new attribute format,
      * the callback of get should be explicitly defined. Otherwise, type will be unknown
+     *
      * @throws ReflectionException
+     * @throws \Exception
      */
     public static function customAttributes(string|Model $model): Collection
     {
-        if (is_string($model)) {
-            $model = new $model();
-        }
+        $model = Models::parseModel($model);
 
-        return Models::getCustomAttributesOf($model)->mapWithKeys(fn(ReflectionMethod $reflectionMethod) => [
+        return Models::getCustomAttributesOf($model)->mapWithKeys(fn (ReflectionMethod $reflectionMethod) => [
             static::getCustomAttributeName($reflectionMethod) => static::transform(
                 static::isOldStyleAttribute($reflectionMethod) ? $reflectionMethod->getReturnType()
                     : (new ReflectionFunction($model->{$reflectionMethod->getName()}()->get))->getReturnType()
-            )
+            ),
         ]);
     }
 
     public static function transform(
         ReflectionUnionType|ReflectionNamedType|Model|Relation|null $item = null,
-        Column|null                                                 $column = null
-    ): string
-    {
+        Column|null $column = null
+    ): string {
         if ($item instanceof Relation) {
             $shorName = (new ReflectionObject($item->getRelated()))->getShortName();
 
@@ -150,7 +153,7 @@ class Transformer
                 HasMany::class, HasManyThrough::class,
                 BelongsToMany::class, MorphMany::class, MorphToMany::class => "{$shorName}[] | null",
                 MorphOneOrMany::class => "{$shorName} | {$shorName}[] | null",
-                default => "any"
+                default               => 'any'
             };
         }
 
@@ -171,11 +174,11 @@ class Transformer
             return DatabaseType::toTypescript($column->getType());
         }
 
-
         if ($item instanceof ReflectionUnionType) {
             return collect($item->getTypes())
-                ->implode(fn(ReflectionNamedType $namedType) => PhpType::toTypescript($namedType->getName()), " | ");
+                ->implode(fn (ReflectionNamedType $namedType) => PhpType::toTypescript($namedType->getName()), ' | ');
         }
+
         return PhpType::toTypescript($item?->getName());
     }
 }
