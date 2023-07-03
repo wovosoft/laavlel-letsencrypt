@@ -35,9 +35,6 @@ export namespace App.Models{
 		updated_at: string;
 		domains: Domain[] | null;
 		certificates: Certificate[] | null;
-		test1: string | number | null;
-		another_test: string;
-		test2: string | number;
 	}
 
 	export interface Order {

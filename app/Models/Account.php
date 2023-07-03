@@ -72,19 +72,4 @@ class Account extends Model
             Domain::class
         );
     }
-
-    public function getTest1Attribute(): string|int|null
-    {
-        return "test1";
-    }
-
-    public function getAnotherTestAttribute(): string
-    {
-        return "Another Test";
-    }
-
-    public function test2(): Attribute
-    {
-        return Attribute::get(fn(): string|int => "test2");
-    }
 }

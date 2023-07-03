@@ -61,6 +61,30 @@ $transformer=new LaravelTypescript(
 $transformer->run();
 ```
 
+## Note on New Model Attributes
+
+For new Model Attributes, return type of the Closure function should be defined,
+otherwise, it will generate `unknown` type for the related property.
+
+But for the old styled attribute, it is not mandatory.
+
+```php
+use \Illuminate\Database\Eloquent\Model;
+use \Illuminate\Database\Eloquent\Casts\Attribute;
+
+class User extends Model{
+    public function isActive() : Attribute 
+    {
+        return Attribute::get(fn(): bool =>$this->status==='active');
+    }
+    
+    public function getIsInactiveAttribute():bool
+    {
+        return $this->status==="inactive";
+    }
+}
+```
+
 ## Change log
 
 Please see the [changelog](changelog.md) for more information on what has changed recently.
