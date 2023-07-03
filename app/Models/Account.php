@@ -3,30 +3,26 @@
 namespace App\Models;
 
 use App\Enums\Status;
-use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
-use Wovosoft\LaravelLetsencryptCore\LaravelClient;
+use Wovosoft\LaravelLetsencryptCore\Client;
 
 /**
  * App\Models\Account
  *
- * @property int $id
- * @property int $user_id
- * @property string|null $account_id
- * @property string $email
- * @property Status $is_valid
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property int                                                                         $id
+ * @property int                                                                         $user_id
+ * @property string|null                                                                 $account_id
+ * @property string                                                                      $email
+ * @property Status                                                                      $is_valid
+ * @property \Illuminate\Support\Carbon|null                                             $created_at
+ * @property \Illuminate\Support\Carbon|null                                             $updated_at
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Certificate> $certificates
- * @property-read int|null $certificates_count
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Domain> $domains
- * @property-read int|null $domains_count
- * @property-read string $another_test
- * @property-read string|int|null $test1
- * @property-read string|int $test2
+ * @property-read int|null                                                               $certificates_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Domain>      $domains
+ * @property-read int|null                                                               $domains_count
  * @method static \Illuminate\Database\Eloquent\Builder|Account newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Account newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Account query()
@@ -45,7 +41,7 @@ class Account extends Model
 
     protected $casts = [
         "created_at" => "datetime",
-        "is_valid"   => Status::class //remove It's for testing
+        "is_valid"   => "boolean"
     ];
 
     /**
@@ -53,7 +49,7 @@ class Account extends Model
      */
     public function getAccount(): \Wovosoft\LaravelLetsencryptCore\Data\Account
     {
-        $lc = new LaravelClient(
+        $lc = new Client(
             mode: config("lets_encrypt.mode"),
             username: $this->email
         );

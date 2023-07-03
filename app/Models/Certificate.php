@@ -10,16 +10,17 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 /**
  * App\Models\Certificate
  *
- * @property int                             $id
- * @property int                             $domain_id
- * @property \Illuminate\Support\Carbon      $issue_date
- * @property \Illuminate\Support\Carbon      $expiry_date
- * @property string                          $private_key
- * @property string                          $certificate
+ * @property int $id
+ * @property int $domain_id
+ * @property \Illuminate\Support\Carbon $issue_date
+ * @property \Illuminate\Support\Carbon $expiry_date
+ * @property string $private_key
+ * @property string $certificate
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \App\Models\Account|null   $account
- * @property-read \App\Models\Domain         $domain
+ * @property-read \App\Models\Account|null $account
+ * @property-read \App\Models\Domain $domain
+ * @property-read bool $is_expired
  * @method static \Illuminate\Database\Eloquent\Builder|Certificate newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Certificate newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Certificate query()

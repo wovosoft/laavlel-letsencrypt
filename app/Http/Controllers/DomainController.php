@@ -10,7 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
-use Wovosoft\LaravelLetsencryptCore\LaravelClient;
+use Wovosoft\LaravelLetsencryptCore\Client;
 
 class DomainController extends Controller
 {

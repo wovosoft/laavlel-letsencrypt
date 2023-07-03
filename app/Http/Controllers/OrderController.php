@@ -11,11 +11,11 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Inertia\Response;
-use Wovosoft\LaravelLetsencryptCore\LaravelClient;
+use Wovosoft\LaravelLetsencryptCore\Client;
 
 class OrderController extends Controller
 {
-    private ?LaravelClient $client = null;
+    private ?Client $client = null;
 
     /**
      * @throws \Exception

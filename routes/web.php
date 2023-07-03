@@ -9,8 +9,8 @@ use App\Models\Account;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
-use Wovosoft\LaravelLetsencryptCore\LaravelClient;
-use Wovosoft\LaravelLetsencryptCore\Ssl\ClientModes;
+use Wovosoft\LaravelLetsencryptCore\Client;
+use Wovosoft\LaravelLetsencryptCore\Enums\Modes;
 
 
 Route::get('/', function () {

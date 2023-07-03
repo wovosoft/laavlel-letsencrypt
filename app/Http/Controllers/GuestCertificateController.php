@@ -9,8 +9,8 @@ use Inertia\Inertia;
 use League\Flysystem\FilesystemException;
 use Wovosoft\LaravelLetsencryptCore\Data\Challenge;
 use Wovosoft\LaravelLetsencryptCore\Data\Order;
-use Wovosoft\LaravelLetsencryptCore\Ssl\ClientModes;
-use Wovosoft\LaravelLetsencryptCore\Ssl\LetsEncrypt;
+use Wovosoft\LaravelLetsencryptCore\Enums\Modes;
+use Wovosoft\LaravelLetsencryptCore\Enums\LetsEncrypt;
 
 class GuestCertificateController extends Controller
 {
@@ -46,7 +46,7 @@ class GuestCertificateController extends Controller
 
         $le = new LetsEncrypt(
             username: $request->input('email'),
-            mode: ClientModes::Staging
+            mode: Modes::Staging
         );
 
         $order = $le->createOrder(
@@ -82,7 +82,7 @@ class GuestCertificateController extends Controller
         }
         $le = new LetsEncrypt(
             username: $request->input('email'),
-            mode: ClientModes::Staging
+            mode: Modes::Staging
         );
 
         $challenge = new Challenge(...$request->input('challenge'));

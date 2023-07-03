@@ -14,14 +14,14 @@ use Wovosoft\LaravelLetsencryptCore\Data\Authorization;
 /**
  * App\Models\Order
  *
- * @property int $id
- * @property int $domain_id
- * @property string|null $order_id
+ * @property int                             $id
+ * @property int                             $domain_id
+ * @property string|null                     $order_id
  * @property \Illuminate\Support\Carbon|null $expires
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \App\Models\Account|null $account
- * @property-read \App\Models\Domain $domain
+ * @property-read \App\Models\Account|null   $account
+ * @property-read \App\Models\Domain         $domain
  * @method static \Illuminate\Database\Eloquent\Builder|Order newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Order newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Order query()
@@ -83,7 +83,7 @@ class Order extends Model
     public function leAuthorizations(): Collection
     {
         return $this->domain->leClient()->authorize(
-            $this->leOrder()
+            order: $this->leOrder()
         );
     }
 }

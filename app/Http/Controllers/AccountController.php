@@ -5,15 +5,14 @@ namespace App\Http\Controllers;
 use App\Helpers\Messages;
 use App\Http\Requests\AccountStoreRequest;
 use App\Models\Account;
-use App\Models\Domain;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Inertia\Response;
-use Wovosoft\LaravelLetsencryptCore\LaravelClient;
-use Wovosoft\LaravelLetsencryptCore\Ssl\ClientModes;
+use Wovosoft\LaravelLetsencryptCore\Client;
+use Wovosoft\LaravelLetsencryptCore\Enums\Modes;
 
 class AccountController extends Controller
 {
@@ -39,8 +38,8 @@ class AccountController extends Controller
             throw new \Exception("Account doesn't belongs to You");
         }
 
-        $lc = new LaravelClient(
-            mode: ClientModes::Staging,
+        $lc = new Client(
+            mode: Modes::Staging,
             username: $account->email
         );
 
@@ -50,7 +49,7 @@ class AccountController extends Controller
         $account->saveOrFail();
         return success()
             ->with(...Messages::withData([
-                "item" => $account,
+                "item"       => $account,
                 "le_account" => $leAccount->toArray()
             ]));
 
@@ -64,6 +63,7 @@ class AccountController extends Controller
         return transaction(function () use ($request) {
             $account = new Account();
             $account->forceFill($request->validated());
+            $account->is_valid = false;
             $request->user()->accounts()->save(
                 $account
             );

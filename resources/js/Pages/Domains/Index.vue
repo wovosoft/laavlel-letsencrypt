@@ -20,7 +20,7 @@
         <Modal v-model="isView"
                shrink
                lazy
-               @hidden="currentItem=null"
+               @hidden="onHiddenOrderAuthorization"
                header-variant="dark"
                close-btn-white
                size="lg"
@@ -36,16 +36,18 @@
             <Table bordered small hover striped class="mt-3">
                 <THead variant="dark">
                 <Tr>
-                    <Th>Date</Th>
+                    <Th>Order ID</Th>
+                    <Th>Created At</Th>
                     <Th>Expires At</Th>
-                    <Th>Action</Th>
+                    <Th class="text-end">Action</Th>
                 </Tr>
                 </THead>
                 <TBody>
                 <Tr v-for="order in currentItem?.orders">
-                    <Td>{{ order?.created_at }}</Td>
-                    <Td>{{ order?.expires }}</Td>
-                    <Td>
+                    <Td>{{ order?.order_id }}</Td>
+                    <Td>{{ toDateTime(order?.created_at) }}</Td>
+                    <Td>{{ toDateTime(order?.expires) }}</Td>
+                    <Td class="text-end">
                         <ButtonGroup size="sm">
                             <Button variant="primary" @click="getAuthorizationMethods(order.id)">
                                 <Spinner v-if="verificationMethods.processing" size="sm"/>
@@ -56,12 +58,43 @@
                 </Tr>
                 </TBody>
             </Table>
-            <pre>{{ currentItem }}</pre>
+            <!--            <pre>{{ currentItem }}</pre>-->
+
+            <template v-if="orderAuthorizations?.length">
+                <template v-for="oa in orderAuthorizations">
+                    <Card v-for="challenge in oa.challenges" class="mb-3">
+                        <template #header>
+                            <Flex jc="between">
+                                <FlexItem>{{ challenge.type }}</FlexItem>
+                                <FlexItem>{{ challenge.status }}</FlexItem>
+                            </Flex>
+                        </template>
+                        <template v-if="challenge.type==='http-01'">
+                            <h4>Step-1: Download the file</h4>
+                            <Button class="mt-3" variant="primary" size="sm" @click="saveFile(oa.file)">
+                                Download File
+                            </Button>
+
+                            <p class="text-muted small mt-3">
+                                While downloading file, if <code>.txt</code> extension
+                                appears automatically, please remove the extension then save the file.
+                            </p>
+                        </template>
+                        <template v-else-if="challenge.type==='dns-01'">
+                            {{ oa.txt_record }}
+                        </template>
+                        <template v-else>
+                            tls-01 (Pending)
+                        </template>
+                    </Card>
+                </template>
+            </template>
+            <pre>{{ orderAuthorizations }}</pre>
         </Modal>
         <Modal v-model="isEdit"
                shrink
                lazy
-               @hidden="formItem.reset()"
+               @hidden="()=> formItem.reset()"
                header-variant="dark"
                close-btn-white
                size="lg"
@@ -85,12 +118,13 @@
                 </FormGroup>
                 <!--                <pre>{{ formItem }}</pre>-->
             </form>
+
         </Modal>
     </Container>
 </template>
 
 <script setup lang="ts">
-import {computed, PropType, ref} from "vue";
+import {PropType, ref} from "vue";
 import {
     Button,
     Container,
@@ -103,32 +137,33 @@ import {
     Td,
     Tr,
     Table,
-    THead, Th, ButtonGroup
+    THead, Th, ButtonGroup, Card, Flex, FlexItem
 } from "@wovosoft/wovoui";
-import {DatatableType} from "@/types";
+import {AuthorizationFile, DatatableType, OrderAuthorization} from "@/types";
 import ActionButtons from "@/Components/ActionButtons.vue";
 import BasicDatatable from "@/Components/Datatable/BasicDatatable.vue";
 import {useForm} from "@inertiajs/vue3";
 import route from "ziggy-js";
 import {toDateTime} from "@/Composables/useHelpers";
 import SelectAccount from "@/Components/Selectors/SelectAccount.vue";
-import {Check, CheckCircle, SendDash, XCircle} from "@wovosoft/wovoui-icons";
+import {CheckCircle, XCircle} from "@wovosoft/wovoui-icons";
 import useAxiosForm from "@/Composables/useAxiosForm";
+import {saveAs} from "file-saver";
 
 const props = defineProps({
-    items: Object as PropType<DatatableType<Account>>,
+    items: Object as PropType<DatatableType<App.Models.Domain>>,
     queries: Object as PropType<{ [key: string]: any }>
 });
 
 
-const fields = computed(() => [
+const fields = [
     {key: 'id'},
     {key: 'account', formatter: (v, k) => v[k]?.email},
     {key: 'domain'},
     {key: 'is_ownership_verified', formatter: (v, k) => v[k] ? 'Yes' : 'No'},
     {key: 'created_at', formatter: (v, k) => toDateTime(v[k])},
     {key: 'action', tdClass: 'text-end', thClass: 'text-end'},
-]);
+];
 
 const isView = ref<boolean>(false);
 const isEdit = ref<boolean>(false);
@@ -173,14 +208,25 @@ const showVerificationModal = () => {
 
 const verificationMethods = useAxiosForm({});
 
+const orderAuthorizations = ref<OrderAuthorization[] | null>(null);
 
 function getAuthorizationMethods(id: number) {
     if (!verificationMethods.processing) {
         verificationMethods
             .post(route('orders.get-authorizations', {order: id}))
             .then(res => {
-                console.log(res)
+                orderAuthorizations.value = res.data;
             })
     }
 }
+
+function onHiddenOrderAuthorization() {
+    orderAuthorizations.value = null;
+    currentItem.value = null;
+}
+
+const saveFile = (file: AuthorizationFile) => {
+    const blob = new Blob([file.contents], {type: "text/plain;charset=utf-8"});
+    saveAs(blob, file.filename);
+};
 </script>

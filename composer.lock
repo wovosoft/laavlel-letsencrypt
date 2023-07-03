@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "886749066b09a03bbef5ddad50afe95c",
+    "content-hash": "2e6c50e0fcd7c9c95585a60c8386d3c2",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -6198,13 +6198,23 @@
             "dist": {
                 "type": "path",
                 "url": "./packages/wovosoft/laravel-letsencrypt-core",
-                "reference": "7d81497f1e9ae7dc7d70d1d13f4992c8fa84a41e"
+                "reference": "7785e5df337c98aa6dbdf593eee770f0649540ae"
             },
             "require": {
                 "ext-json": "*",
                 "ext-openssl": "*"
             },
             "type": "package",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Wovosoft\\LaravelLetsencryptCore\\LaravelLetsencryptCoreServiceProvider"
+                    ],
+                    "aliases": {
+                        "LaravelTypescript": "Wovosoft\\LaravelLetsencryptCore\\Facades\\LaravelLetsencryptCore"
+                    }
+                }
+            },
             "autoload": {
                 "psr-4": {
                     "Wovosoft\\LaravelLetsencryptCore\\": "./src"
@@ -6215,69 +6225,20 @@
             ],
             "authors": [
                 {
-                    "name": "Afosto Team",
-                    "homepage": "https://afosto.com"
+                    "name": "Narayan Adhikary",
+                    "homepage": "https://github.com/wovosoft/laravel-letsencrypt-core"
                 }
             ],
             "description": "Yet Another ACME client: a decoupled LetsEncrypt client",
-            "homepage": "https://afosto.com",
+            "homepage": "https://wovosoft.com",
             "keywords": [
                 "acme",
                 "acmev2",
-                "afosto",
                 "encrypt",
                 "lets",
-                "v2"
-            ],
-            "transport-options": {
-                "symlink": true,
-                "relative": true
-            }
-        },
-        {
-            "name": "wovosoft/laravel-typescript",
-            "version": "dev-master",
-            "dist": {
-                "type": "path",
-                "url": "./packages/wovosoft/laravel-typescript",
-                "reference": "e25b9e436921ef6054ac0db621ed1dbc51f7e0c4"
-            },
-            "type": "library",
-            "extra": {
-                "laravel": {
-                    "providers": [
-                        "Wovosoft\\LaravelTypescript\\LaravelTypescriptServiceProvider"
-                    ],
-                    "aliases": {
-                        "LaravelTypescript": "Wovosoft\\LaravelTypescript\\Facades\\LaravelTypescript"
-                    }
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Wovosoft\\LaravelTypescript\\": "src/"
-                }
-            },
-            "autoload-dev": {
-                "psr-4": {
-                    "Wovosoft\\LaravelTypescript\\Tests\\": "tests"
-                }
-            },
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Narayan Adhikary",
-                    "email": "wovosoft@gmail.com",
-                    "homepage": "https://wovosoft.com"
-                }
-            ],
-            "description": ":package_description",
-            "homepage": "https://github.com/wovosoft/laravel-typescript",
-            "keywords": [
-                "Laravel",
-                "Typescript Transformer"
+                "ssl",
+                "v2",
+                "wovosoft"
             ],
             "transport-options": {
                 "symlink": true,
@@ -9615,13 +9576,73 @@
                 }
             ],
             "time": "2021-07-28T10:34:58+00:00"
+        },
+        {
+            "name": "wovosoft/laravel-typescript",
+            "version": "v1.0.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/wovosoft/laravel-typescript.git",
+                "reference": "fa8843645d82a33b5131a3bbc2765f007f10aa6d"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/wovosoft/laravel-typescript/zipball/fa8843645d82a33b5131a3bbc2765f007f10aa6d",
+                "reference": "fa8843645d82a33b5131a3bbc2765f007f10aa6d",
+                "shasum": ""
+            },
+            "require": {
+                "composer/class-map-generator": ">=1.1.0",
+                "doctrine/dbal": ">=3.6.4",
+                "php": "^8.1"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Wovosoft\\LaravelTypescript\\LaravelTypescriptServiceProvider"
+                    ],
+                    "aliases": {
+                        "LaravelTypescript": "Wovosoft\\LaravelTypescript\\Facades\\LaravelTypescript"
+                    }
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Wovosoft\\LaravelTypescript\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Narayan Adhikary",
+                    "email": "wovosoft@gmail.com",
+                    "homepage": "https://wovosoft.com"
+                }
+            ],
+            "description": "Transforms Laravel Models to Typescript Interfaces/Types",
+            "homepage": "https://github.com/wovosoft/laravel-typescript",
+            "keywords": [
+                "Typescript Interfaces",
+                "Typescript Transformer",
+                "Typescript Types",
+                "laravel",
+                "php to typescript"
+            ],
+            "support": {
+                "issues": "https://github.com/wovosoft/laravel-typescript/issues",
+                "source": "https://github.com/wovosoft/laravel-typescript/tree/v1.0.2"
+            },
+            "time": "2023-07-03T12:11:07+00:00"
         }
     ],
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
-        "wovosoft/laravel-letsencrypt-core": 20,
-        "wovosoft/laravel-typescript": 20
+        "wovosoft/laravel-letsencrypt-core": 20
     },
     "prefer-stable": true,
     "prefer-lowest": false,

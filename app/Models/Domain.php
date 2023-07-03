@@ -8,22 +8,22 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Carbon;
-use Wovosoft\LaravelLetsencryptCore\LaravelClient;
+use Wovosoft\LaravelLetsencryptCore\Client;
 
 /**
  * App\Models\Domain
  *
- * @property int $id
- * @property int $account_id
- * @property string $domain
- * @property bool $is_ownership_verified
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
- * @property-read \App\Models\Account $account
+ * @property int                                           $id
+ * @property int                                           $account_id
+ * @property string                                        $domain
+ * @property bool                                          $is_ownership_verified
+ * @property Carbon|null                                   $created_at
+ * @property Carbon|null                                   $updated_at
+ * @property-read \App\Models\Account                      $account
  * @property-read Collection<int, \App\Models\Certificate> $certificates
- * @property-read int|null $certificates_count
- * @property-read Collection<int, \App\Models\Order> $orders
- * @property-read int|null $orders_count
+ * @property-read int|null                                 $certificates_count
+ * @property-read Collection<int, \App\Models\Order>       $orders
+ * @property-read int|null                                 $orders_count
  * @method static \Illuminate\Database\Eloquent\Builder|Domain newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Domain newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Domain query()
@@ -39,7 +39,7 @@ class Domain extends Model
 {
     use HasFactory;
 
-    private ?LaravelClient $laravelClient = null;
+    private ?Client $client = null;
     protected $with = [
         "account"
     ];
@@ -51,13 +51,13 @@ class Domain extends Model
     /**
      * @throws \Exception
      */
-    public function leClient(bool $refresh = false): LaravelClient
+    public function leClient(bool $refresh = false): Client
     {
-        if ($this->laravelClient && !$refresh) {
-            return $this->laravelClient;
+        if ($this->client && !$refresh) {
+            return $this->client;
         }
-        return new LaravelClient(
-            mode: config("lets_encrypt.mode"),
+        return new Client(
+            mode: config("laravel-letsencrypt-core.mode"),
             username: $this->account?->email
         );
     }

@@ -23,3 +23,31 @@ export type DatatableType<T> = {
     to: null | number,
     total: number
 }
+
+export type AuthorizationType = "http-01" | "dns-01" | "tls-alpn-01";
+export type LeOrderType = "pending" | "ready";
+
+export interface AuthorizationFile {
+    filename: string
+    contents: string
+}
+
+export interface TxtRecord {
+    name: string
+    value: string
+}
+
+export interface OrderAuthorization {
+    "domain": string,
+    "expires": string
+    "challenges": {
+        "authorizationURL": string
+        "type": AuthorizationType
+        "status": LeOrderType
+        "url": string
+        "token": string
+    }[],
+
+    "file": AuthorizationFile,
+    "txt_record": TxtRecord
+}
