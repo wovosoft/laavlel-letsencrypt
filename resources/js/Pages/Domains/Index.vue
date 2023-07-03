@@ -23,7 +23,7 @@
                @hidden="onHiddenOrderAuthorization"
                header-variant="dark"
                close-btn-white
-               size="lg"
+               size="xl"
                title="Domain Details">
             <h4>
                 {{ currentItem?.domain }}
@@ -79,17 +79,76 @@
                                 While downloading file, if <code>.txt</code> extension
                                 appears automatically, please remove the extension then save the file.
                             </p>
+
+                            <h4>Step-2: Upload File</h4>
+                            <p>
+                                Create a folder <code>.well-known</code> in the root folder of your domain.
+                                And inside the <code>.well-known</code>"create another folder
+                                <code>acme-challenge</code>. Then upload the above file(s) inside the
+                                <code>acme-challenge</code>
+                                folder.
+                            </p>
+
+                            <h4>Step-3: Check File</h4>
+                            <p>
+                                <a :href="getAuthFileUrl(oa)">
+                                    {{ getAuthFileUrl(oa) }}
+                                </a>
+                            </p>
+                            <h4>Step-4: Verify Domain Ownership</h4>
+                            <Button variant="primary" size="sm" class="mt-3" @click="validateHttpChallenge(oa)">
+                                Verify Domain
+                            </Button>
                         </template>
                         <template v-else-if="challenge.type==='dns-01'">
-                            {{ oa.txt_record }}
+                            <ol>
+                                <li>
+                                    Login to your domain host (or wherever service that is "in control" of your domain).
+                                </li>
+                                <li>
+                                    Go to the DNS record settings and create a new TXT record.
+                                </li>
+                                <li>
+                                    In the Name/Host/Alias field, enter the domain TXT record from below table for
+                                    example: "_acme-challenge".
+                                </li>
+                                <li>
+                                    In the Value/Answer field enter the verfication code from below table.
+                                </li>
+                                <li>
+                                    Wait for few minutes for the TXT record to propagate. You can check if it worked by
+                                    clicking on the "Check DNS" button. If you have multiple entries, make sure all of
+                                    them are ok.
+                                </li>
+                            </ol>
+                            <Table small bordered>
+                                <THead variant="dark">
+                                <Tr>
+                                    <Th>TXT Record</Th>
+                                    <Th>Value</Th>
+                                    <Th>Status</Th>
+                                </Tr>
+                                </THead>
+                                <TBody>
+                                <Tr>
+                                    <Td>{{ oa.txt_record.name }}</Td>
+                                    <Td>{{ oa.txt_record.value }}</Td>
+                                    <Td>
+                                        <Button size="sm" variant="primary">
+                                            Check Status
+                                        </Button>
+                                    </Td>
+                                </Tr>
+                                </TBody>
+                            </Table>
                         </template>
-                        <template v-else>
-                            tls-01 (Pending)
+                        <template v-else-if="challenge.type==='tls-alpn-01'">
+                            <span class="text-danger">Not suitable for everyone</span>
                         </template>
                     </Card>
                 </template>
             </template>
-            <pre>{{ orderAuthorizations }}</pre>
+            <!--            <pre>{{ orderAuthorizations }}</pre>-->
         </Modal>
         <Modal v-model="isEdit"
                shrink
@@ -208,7 +267,7 @@ const showVerificationModal = () => {
 
 const verificationMethods = useAxiosForm({});
 
-const orderAuthorizations = ref<OrderAuthorization[] | null>(null);
+const orderAuthorizations = ref<OrderAuthorization[] | null>();
 
 function getAuthorizationMethods(id: number) {
     if (!verificationMethods.processing) {
@@ -229,4 +288,12 @@ const saveFile = (file: AuthorizationFile) => {
     const blob = new Blob([file.contents], {type: "text/plain;charset=utf-8"});
     saveAs(blob, file.filename);
 };
+
+function getAuthFileUrl(oa: OrderAuthorization): string {
+    return (new URL(oa.file.filename, 'http://' + oa.domain + '/.well-known/acme-challenge/')).href;
+}
+
+function validateHttpChallenge(oa: OrderAuthorization) {
+    
+}
 </script>
