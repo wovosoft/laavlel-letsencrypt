@@ -1,6 +1,6 @@
 <?php
 
-namespace Wovosoft\LaravelTypescript;
+namespace Wovosoft\LaravelTypescript\Transformers;
 
 use Illuminate\Database\Eloquent\Casts\AsStringable;
 

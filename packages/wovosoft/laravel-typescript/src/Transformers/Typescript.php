@@ -1,10 +1,10 @@
 <?php
 
-namespace Wovosoft\LaravelTypescript;
+namespace Wovosoft\LaravelTypescript\Transformers;
 
 use Illuminate\Support\Collection;
 
-class TypescriptType
+class Typescript
 {
     public function __construct(
         public string      $namespace,
@@ -17,8 +17,8 @@ class TypescriptType
 
     public function generate(): string
     {
-        return "\texport interface $this->shortName {\n"
-            . $this->types?->implode(fn(string $value, string $key) => "\t\t$key: $value;", "\n")
-            . "\n\t}\n\n";
+        return "\texport interface $this->shortName {" . PHP_EOL
+            . $this->types?->implode(fn(string $value, string $key) => "\t\t$key: $value;", PHP_EOL)
+            . PHP_EOL . "\t}";
     }
 }

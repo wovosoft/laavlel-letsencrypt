@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to `TypescriptTransformer` will be documented in this file.
+All notable changes to `Typescript Transformer` will be documented in this file.
 
 ## Version 1.0
 

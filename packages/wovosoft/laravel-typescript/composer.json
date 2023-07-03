@@ -1,6 +1,6 @@
 {
     "name": "wovosoft/laravel-typescript",
-    "description": ":package_description",
+    "description": "Transforms Laravel Models to Typescript Interfaces/Types",
     "license": "MIT",
     "authors": [
         {
@@ -12,7 +12,10 @@
     "homepage": "https://github.com/wovosoft/laravel-typescript",
     "keywords": [
         "Laravel",
-        "Typescript Transformer"
+        "Typescript Transformer",
+        "Typescript Interfaces",
+        "Typescript Types",
+        "php to typescript"
     ],
     "autoload": {
         "psr-4": {
