@@ -106,4 +106,3 @@ MIT. Please see the [license file](license.md) for more information.
 
 [link-author]: https://github.com/wovosoft
 
-[link-contributors]: ../../contributors
