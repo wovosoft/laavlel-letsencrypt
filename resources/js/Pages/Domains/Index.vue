@@ -96,7 +96,8 @@
                                 </a>
                             </p>
                             <h4>Step-4: Verify Domain Ownership</h4>
-                            <Button variant="primary" size="sm" class="mt-3" @click="validateHttpChallenge(oa)">
+                            <Button variant="primary" size="sm" class="mt-3"
+                                    @click="validateHttpChallenge(oa)">
                                 Verify Domain
                             </Button>
                         </template>
@@ -148,7 +149,7 @@
                     </Card>
                 </template>
             </template>
-            <!--            <pre>{{ orderAuthorizations }}</pre>-->
+            <pre>{{ orderAuthorizations }}</pre>
         </Modal>
         <Modal v-model="isEdit"
                shrink
@@ -198,7 +199,7 @@ import {
     Table,
     THead, Th, ButtonGroup, Card, Flex, FlexItem
 } from "@wovosoft/wovoui";
-import {AuthorizationFile, DatatableType, OrderAuthorization} from "@/types";
+import {AuthorizationChallenge, AuthorizationFile, DatatableType, OrderAuthorization} from "@/types";
 import ActionButtons from "@/Components/ActionButtons.vue";
 import BasicDatatable from "@/Components/Datatable/BasicDatatable.vue";
 import {useForm} from "@inertiajs/vue3";
@@ -208,6 +209,7 @@ import SelectAccount from "@/Components/Selectors/SelectAccount.vue";
 import {CheckCircle, XCircle} from "@wovosoft/wovoui-icons";
 import useAxiosForm from "@/Composables/useAxiosForm";
 import {saveAs} from "file-saver";
+import axios from "axios";
 
 const props = defineProps({
     items: Object as PropType<DatatableType<App.Models.Domain>>,
@@ -267,6 +269,7 @@ const showVerificationModal = () => {
 
 const verificationMethods = useAxiosForm({});
 
+const currentOrderId = ref<number | null>();
 const orderAuthorizations = ref<OrderAuthorization[] | null>();
 
 function getAuthorizationMethods(id: number) {
@@ -274,6 +277,7 @@ function getAuthorizationMethods(id: number) {
         verificationMethods
             .post(route('orders.get-authorizations', {order: id}))
             .then(res => {
+                currentOrderId.value = id;
                 orderAuthorizations.value = res.data;
             })
     }
@@ -282,6 +286,7 @@ function getAuthorizationMethods(id: number) {
 function onHiddenOrderAuthorization() {
     orderAuthorizations.value = null;
     currentItem.value = null;
+    currentOrderId.value = null;
 }
 
 const saveFile = (file: AuthorizationFile) => {
@@ -294,6 +299,15 @@ function getAuthFileUrl(oa: OrderAuthorization): string {
 }
 
 function validateHttpChallenge(oa: OrderAuthorization) {
-    
+    let auth_url = oa.challenges.find((challenge: AuthorizationChallenge) => challenge.type === 'http-01')?.authorizationURL;
+
+    let url = route('orders.validate-challenge', {order: Number(currentOrderId.value)});
+    axios.post(url, {auth_url}).then(res => {
+        console.log(res.data)
+    }).catch(error => {
+        console.log(error.response.data)
+    }).finally(() => {
+        // currentOrderId.value = null;
+    });
 }
 </script>

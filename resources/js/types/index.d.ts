@@ -37,17 +37,18 @@ export interface TxtRecord {
     value: string
 }
 
+export interface AuthorizationChallenge {
+    "authorizationURL": string
+    "type": AuthorizationType
+    "status": LeOrderType
+    "url": string
+    "token": string
+}
+
 export interface OrderAuthorization {
     "domain": string,
     "expires": string
-    "challenges": {
-        "authorizationURL": string
-        "type": AuthorizationType
-        "status": LeOrderType
-        "url": string
-        "token": string
-    }[],
-
+    "challenges": AuthorizationChallenge[],
     "file": AuthorizationFile,
     "txt_record": TxtRecord
 }

@@ -8,10 +8,13 @@ use App\Models\Order;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Inertia\Response;
 use Wovosoft\LaravelLetsencryptCore\Client;
+use Wovosoft\LaravelLetsencryptCore\Data\Authorization;
+use Wovosoft\LaravelLetsencryptCore\Data\Challenge;
 
 class OrderController extends Controller
 {
@@ -20,7 +23,7 @@ class OrderController extends Controller
     /**
      * @throws \Exception
      */
-    private function le(Domain $domain)
+    private function le(Domain $domain): Client
     {
         if (!$this->client) {
             $this->client = $domain->leClient();
@@ -38,6 +41,7 @@ class OrderController extends Controller
                 Route::put('store/for-domain/{domain}', 'store')->name('store');
                 Route::match(['get', 'post'], 'options', 'options')->name('options');
                 Route::post('get-authorizations/{order}', 'getAuthorizations')->name('get-authorizations');
+                Route::post('validate-challenge/{order}', 'validateChallenge')->name('validate-challenge');
             });
     }
 
@@ -99,7 +103,23 @@ class OrderController extends Controller
     public function getAuthorizations(Request $request, Order $order)
     {
         return $order->leAuthorizations()->toArray();
+    }
 
-
+    /**
+     * @throws \Throwable
+     */
+    public function validateChallenge(Request $request, Order $order)
+    {
+        $http = Http::get($request->input('auth_url'));
+        $challenge = collect($http->collect()->get('challenges'))
+            ->first(fn($item) => $item['type'] === 'http-01');
+        $challenge = new Challenge(
+            ...[
+                "authorizationURL" => $request->input('auth_url'),
+                ...(array)$challenge
+            ]
+        );
+        return $order->validateLeOrder($challenge);
+//        return ->validate();
     }
 }

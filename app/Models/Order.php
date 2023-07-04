@@ -10,18 +10,19 @@ use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 use Illuminate\Support\Collection;
 use Throwable;
 use Wovosoft\LaravelLetsencryptCore\Data\Authorization;
+use Wovosoft\LaravelLetsencryptCore\Data\Challenge;
 
 /**
  * App\Models\Order
  *
- * @property int                             $id
- * @property int                             $domain_id
- * @property string|null                     $order_id
+ * @property int $id
+ * @property int $domain_id
+ * @property string|null $order_id
  * @property \Illuminate\Support\Carbon|null $expires
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \App\Models\Account|null   $account
- * @property-read \App\Models\Domain         $domain
+ * @property-read \App\Models\Account|null $account
+ * @property-read \App\Models\Domain $domain
  * @method static \Illuminate\Database\Eloquent\Builder|Order newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Order newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|Order query()
@@ -77,7 +78,7 @@ class Order extends Model
     }
 
     /**
-     * @return Collection
+     * @return Collection<int,Authorization>
      * @throws Throwable
      */
     public function leAuthorizations(): Collection
@@ -85,5 +86,21 @@ class Order extends Model
         return $this->domain->leClient()->authorize(
             order: $this->leOrder()
         );
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function validateLeOrder(Challenge $challenge): bool|string
+    {
+        return $this->domain->leClient()->validate($challenge);
+    }
+
+    /**
+     * @throws Throwable
+     */
+    public function getCertificates()
+    {
+        return $this->domain->leClient()->getCertificate($this->leOrder());
     }
 }
